@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ROXX Diagnostic Centre | B2B Partner Desk</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'],
+          },
+          colors: {
+            brandBlue: '#1a73e8',
+            brandDark: '#1e293b',
+            brandSurface: '#f8fafc',
+            brandBorder: '#e2e8f0'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+  <!-- TOP HEADER NOTIFICATION -->
+  <div class="bg-blue-600 text-white text-xs sm:text-sm font-semibold py-2 px-4 shadow-sm">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 truncate">
+        <span class="bg-white text-blue-700 text-[11px] font-black px-1.5 py-0.5 rounded uppercase">B2B Desk</span>
+        <span class="truncate">सुबह 8:30 AM तक ड्रॉप करने पर सेम-डे रिपोर्ट उपलब्ध!</span>
+      </div>
+      <a href="tel:+919153903729" class="shrink-0 flex items-center gap-1.5 hover:underline font-mono">
+        <i class="fa-solid fa-phone text-xs"></i> <span id="headerPhone" class="hidden sm:inline">+91 9153903729</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <header class="bg-white border-b border-brandBorder sticky top-0 z-40 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+      
+      <!-- Brand Logo / Name (Dynamic from Database) -->
+      <a href="index.html" class="flex items-center gap-3">
+        <img id="siteLogoImg" src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&q=80" alt="Logo" class="w-10 h-10 object-cover rounded-xl border border-brandBorder shadow-sm">
+        <div>
+          <div id="siteNameText" class="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">ROXX Diagnostic Centre</div>
+          <div class="text-[11px] sm:text-xs text-slate-500 font-medium">Authorized Dr. Lal PathLabs Desk</div>
+        </div>
+      </a>
+
+      <!-- Right Nav / Auth Profile -->
+      <div class="flex items-center gap-2">
+        <!-- Direct Admin Portal Button (Shows only for Admin Gmail) -->
+        <a id="adminTopBtn" href="admin.html" class="hidden text-xs bg-slate-900 hover:bg-black text-white font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-amber-400"></i>
+          <span>एडमिन पैनल</span>
+        </a>
+
+        <!-- Login Container -->
+        <div id="authSlot">
+          <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
+            <i class="fa-brands fa-google"></i>
+            <span>Google लॉगिन</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- USER B2B PROFILE CARD (Shows automatically on login) -->
+  <div id="userProfileBanner" class="hidden bg-white border-b border-brandBorder p-4 shadow-sm">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/70 border border-blue-200 p-3.5 rounded-2xl">
+      <div class="flex items-center gap-3">
+        <img id="uAvatar" src="" class="w-11 h-11 rounded-full border-2 border-white shadow-sm">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="uName" class="font-bold text-sm text-slate-900"></span>
+            <span class="bg-blue-600 text-white font-mono font-bold text-[11px] px-2 py-0.5 rounded-md" id="uUniqueId">ID: GENERATING...</span>
+          </div>
+          <div id="uEmail" class="text-xs text-slate-600 font-mono mt-0.5"></div>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 text-xs">
+        <button onclick="handleLogout()" class="text-slate-600 hover:text-red-600 font-medium px-3 py-1.5 border border-slate-300 rounded-lg bg-white">
+          लॉगआउट
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WRAPPER -->
+  <main class="max-w-4xl mx-auto px-4 py-5 w-full flex-1 space-y-6">
+
+    <!-- HERO PROMO BOX -->
+    <div class="bg-white rounded-3xl p-5 sm:p-7 border border-brandBorder shadow-sm space-y-3">
+      <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
+        <i class="fa-solid fa-certificate"></i> B2B DAILY PARTNER OFFER
+      </div>
+      <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
+        अस्पतालों, क्लिनिक्स और पैथोलॉजी लैब्स के लिए विशेष दरें
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        Google से लॉगिन करें, अपनी <strong>ऑटोमैटिक यूनिक B2B ID</strong> पाएँ और सीधे सैंपल का ऑर्डर भेजें। उच्च गुणवत्ता और भरोसेमंद रिपोर्ट।
+      </p>
+
+      <div class="pt-2 flex flex-wrap gap-4 text-xs font-medium text-slate-600 border-t border-slate-100">
+        <div class="flex items-center gap-1.5">
+          <i class="fa-solid fa-phone text-blue-600"></i> <span id="dynContactPhone">+91 9153903729</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <i class="fa-solid fa-location-dot text-blue-600"></i> <span id="dynContactAddress">मांझी (Manjhi), सारण, बिहार</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANDATORY RULES 4 CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-fingerprint"></i> ऑटो यूनिक ID
+        </div>
+        <p class="text-[11px] text-slate-600 leading-normal">लॉगिन करते ही आपकी परमानेंट ID बनेगी, वायल पर यही ID लिखें।</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left"></i> 72-घंटे नियम
+        </div>
+        <p class="text-[11px] text-slate-600 leading-normal">2-3 दिन लगातार सैंपल न आने पर B2B छूट रोक दी जाएगी।</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-truck-ramp-box"></i> सेल्फ ड्रॉप
+        </div>
+        <p class="text-[11px] text-slate-600 leading-normal">सही वायल में मांझी काउंटर पर ड्रॉप करने की ज़िम्मेदारी लैब की होगी।</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-vials"></i> नो चेरी-पिकिंग
+        </div>
+        <p class="text-[11px] text-slate-600 leading-normal">स्पेशल टेस्ट्स के साथ रूटीन सैंपल (CBC/LFT/KFT) भी देना आवश्यक है।</p>
+      </div>
+    </div>
+
+    <!-- SEARCH & TEST CATALOG -->
+    <div class="space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">जाँच प्रोफाइल एवं B2B रेट लिस्ट</h2>
+          <p class="text-xs text-slate-500">टेस्ट चुनें और नीचे अपना B2B सैंपल ऑर्डर तैयार करें</p>
+        </div>
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+          <input type="text" id="testSearchInput" oninput="filterCatalog()" placeholder="टेस्ट नाम या कोड खोजें (CBC, LFT)..." class="w-full text-xs pl-9 pr-3 py-2.5 bg-white border border-brandBorder rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+      </div>
+
+      <!-- Test Catalog Cards Grid (Mobile App Vibe) -->
+      <div id="testCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scroll p-1">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ORDER / SAMPLE DROP FORM (Prominent Card) -->
+    <div id="orderBookingCard" class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-brandBorder pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-slate-900">B2B सैंपल ड्रॉप ऑर्डर</h3>
+            <p class="text-[11px] text-slate-500">चुने गए टेस्ट्स और लैब की जानकारी भरें</p>
+          </div>
+        </div>
+        <span id="selectedCountBadge" class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">0 टेस्ट</span>
+      </div>
+
+      <!-- Selected Items inside cart -->
+      <div id="cartItemList" class="space-y-2 max-h-48 overflow-y-auto custom-scroll">
+        <p class="text-xs text-slate-400 text-center py-6">कोई टेस्ट सिलेक्ट नहीं है। ऊपर लिस्ट से "+ टेस्ट जोड़ें" दबाएँ।</p>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 text-xs">
+        <div class="flex justify-between text-slate-500">
+          <span>कुल MRP:</span>
+          <span id="sumMrp" class="line-through">₹0</span>
+        </div>
+        <div class="flex justify-between font-bold text-slate-900 text-sm">
+          <span>B2B कुल देय राशि:</span>
+          <span id="sumB2b" class="text-blue-600 font-extrabold text-base">₹0</span>
+        </div>
+        <div class="flex justify-between text-[11px] text-emerald-600 font-semibold">
+          <span>आपकी बचत (मार्जिन):</span>
+          <span id="sumSavings">₹0</span>
+        </div>
+      </div>
+
+      <!-- Sample Order Form Inputs -->
+      <form onsubmit="handlePlaceOrder(event)" class="space-y-3 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">आपकी यूनिक B2B ID *</label>
+            <input type="text" id="orderFormUniqueId" readonly placeholder="लॉगिन करने पर ऑटो-आएगा" class="w-full text-xs font-mono font-bold p-2.5 bg-slate-100 border border-brandBorder rounded-xl text-blue-700 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">लैब / क्लिनिक का नाम *</label>
+            <input type="text" id="orderLabName" required placeholder="उदा. माँ दुर्गा पैथोलॉजी" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">मरीज़ का नाम व वायल विवरण *</label>
+            <input type="text" id="orderPatient" required placeholder="उदा. Suresh Kumar (1 EDTA, 1 Plain)" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">मोबाइल नंबर *</label>
+            <input type="tel" id="orderPhone" required placeholder="उदा. 9876543210" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">लैब का पता / स्थान (Location) *</label>
+          <input type="text" id="orderLocation" required placeholder="उदा. माँझी बाजार, सारण" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>ऑर्डर सबमिट करें और WhatsApp पर रसीद भेजें</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- REVIEWS SECTION (No dummy data - only real submissions) -->
+    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-base text-slate-900">पार्टनर समीक्षाएँ (Reviews)</h3>
+          <p class="text-xs text-slate-500">हमारे साथ जुड़े B2B पार्टनर्स के अनुभव</p>
+        </div>
+        <button onclick="openReviewModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-nib text-blue-600"></i>
+          <span>रिव्यू लिखें</span>
+        </button>
+      </div>
+
+      <!-- Real Reviews Container -->
+      <div id="reviewsListGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- If empty, friendly message displayed -->
+      </div>
+    </div>
+
+    <!-- LOCATION PREVIEW -->
+    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-3">
+      <h3 class="font-bold text-base text-slate-900">सैंपल ड्रॉप डेस्क लोकेशन</h3>
+      <p id="deskLocationText" class="text-xs text-slate-600">मांझी (Manjhi), सारण जिला (बिहार)</p>
+      
+      <div id="mapEmbedFrameContainer" class="w-full h-56 rounded-2xl overflow-hidden border border-brandBorder bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+        <span id="mapNotice">गूगल मैप लोड हो रहा है...</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-brandBorder py-6 mt-8">
+    <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <div>© 2026 ROXX Diagnostic Centre. सर्वाधिकार सुरक्षित।</div>
+      <div class="flex items-center gap-3">
+        <span>विजिटर: <strong id="visitorCounter" class="text-slate-800 font-mono">0</strong></span>
+        <span>•</span>
+        <span id="deskEmailDisplay" class="font-mono">roxxdiagnosticcentre@gmail.com</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. ADMIN POPUP (When roxxdiagnosticcentre@gmail.com logs in) -->
+  <div id="adminDirectPopup" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-brandBorder text-center space-y-4">
+      <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div>
+        <h4 class="font-extrabold text-slate-900 text-lg">एडमिन एक्सेस डिटेक्टेड!</h4>
+        <p class="text-xs text-slate-500 mt-1">आप मुख्य एडमिन ईमेल आईडी से लॉगिन हुए हैं।</p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <a href="admin.html" class="w-full bg-slate-900 hover:bg-black text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow transition">
+          <i class="fa-solid fa-gauge-high"></i> एडमिन पैनल खोलें (Go to Admin Panel)
+        </a>
+        <button onclick="closeAdminPopup()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition">
+          यूज़र पैनल में बने रहें
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SUBMIT REVIEW MODAL -->
+  <div id="reviewInputModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-brandBorder relative">
+      <button onclick="closeReviewModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <h4 class="font-bold text-slate-900 text-base mb-1">अपना B2B अनुभव लिखें</h4>
+      <p class="text-xs text-slate-500 mb-4">समय पर रिपोर्ट, B2B रेट और सर्विस पर अपनी राय दें।</p>
+
+      <form onsubmit="handleSendReview(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">नाम / लैब का नाम *</label>
+          <input type="text" id="revAuthorInput" required placeholder="उदा. डॉ. आनंद / शिव पैथोलॉजी" class="w-full text-xs p-2.5 border border-brandBorder rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">रेटिंग</label>
+          <select id="revStarsInput" class="w-full text-xs p-2.5 border border-brandBorder rounded-xl outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+            <option value="5">⭐⭐⭐⭐⭐ (5 Star - बहुत बढ़िया)</option>
+            <option value="4">⭐⭐⭐⭐ (4 Star - अच्छा)</option>
+            <option value="3">⭐⭐⭐ (3 Star - सामान्य)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">आपकी टिप्पणी *</label>
+          <textarea id="revCommentInput" required rows="3" placeholder="यहाँ अपना रिव्यू लिखें..." class="w-full text-xs p-2.5 border border-brandBorder rounded-xl outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl transition">
+          रिव्यू पोस्ट करें
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuPrvfgrXLIxEDcpximEVoQQqvxc8BtEc",
+      authDomain: "youff-4f9e4.firebaseapp.com",
+      databaseURL: "https://youff-4f9e4-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "youff-4f9e4",
+      storageBucket: "youff-4f9e4.firebasestorage.app",
+      messagingSenderId: "623480637701",
+      appId: "1:623480637701:web:4fa379576f49a9960d0f6c"
+    };
+
+    const ADMIN_EMAIL = "roxxdiagnosticcentre@gmail.com";
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // Flyer Test Catalog
+    const testsData = [
+      { code: "Z021", name: "CBC (Complete Blood Count)", mrp: 330, b2b: 290 },
+      { code: "Z005", name: "LFT (Liver Function Complete)", mrp: 790, b2b: 680 },
+      { code: "Z007", name: "KFT / RFT (Kidney Profile)", mrp: 840, b2b: 720 },
+      { code: "S010", name: "HIV 1 & 2 Screening (EIA)", mrp: 520, b2b: 440 },
+      { code: "S056", name: "HBsAg Qualitative (Hep B)", mrp: 540, b2b: 460 },
+      { code: "B001", name: "Blood Glucose (F / PP / R)", mrp: 50, b2b: 45 },
+      { code: "R052", name: "TSH (Ultrasensitive)", mrp: 220, b2b: 120 },
+      { code: "Z284", name: "Thyroid Profile Total", mrp: 570, b2b: 220 },
+      { code: "Z045", name: "Thyroid Profile Free", mrp: 1000, b2b: 420 },
+      { code: "B080", name: "HbA1c (Diabetes Screen)", mrp: 450, b2b: 340 },
+      { code: "R119", name: "Vitamin D (25-Hydroxy)", mrp: 1100, b2b: 750 },
+      { code: "R047", name: "Vitamin B12 (Cyanocobalamin)", mrp: 1110, b2b: 580 },
+      { code: "J001", name: "Biopsy / Histopathology", mrp: 550, b2b: 400 },
+      { code: "M007", name: "Urine Culture & Sensitivity", mrp: 550, b2b: 440 },
+      { code: "R080", name: "FSH (Hormone)", mrp: 600, b2b: 240 },
+      { code: "R081", name: "LH (Hormone)", mrp: 600, b2b: 240 },
+      { code: "R082", name: "Prolactin (Serum)", mrp: 560, b2b: 240 },
+      { code: "R002", name: "Testosterone Total", mrp: 700, b2b: 340 },
+      { code: "R019", name: "Estradiol (E2)", mrp: 700, b2b: 350 },
+      { code: "B171", name: "AMH Hormone", mrp: 2000, b2b: 1500 },
+      { code: "R021", name: "Beta HCG Quant.", mrp: 650, b2b: 380 },
+      { code: "Z397", name: "Dual Marker (1st)", mrp: 2200, b2b: 1700 },
+      { code: "Z266", name: "Triple Test (2nd)", mrp: 2900, b2b: 1500 },
+      { code: "Z514", name: "Quadruple Marker", mrp: 3500, b2b: 2450 },
+      { code: "N001", name: "TB PCR (MycoSure)", mrp: 2200, b2b: 1300 },
+      { code: "B149", name: "Anti-CCP", mrp: 2000, b2b: 950 },
+      { code: "S062", name: "Hepatitis C", mrp: 1600, b2b: 680 },
+      { code: "Z318", name: "Lipid Profile", mrp: 400, b2b: 240 }
+    ];
+
+    let orderCart = [];
+    let loggedUser = null;
+    let userAssignedId = null;
+
+    // Render Test Cards (Bold, Phone App Style)
+    function renderTestCatalog(items) {
+      const grid = document.getElementById("testCardsGrid");
+      grid.innerHTML = "";
+
+      items.forEach(t => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm flex items-center justify-between gap-3 hover:border-blue-400 transition";
+        card.innerHTML = `
+          <div class="truncate">
+            <span class="font-bold text-xs sm:text-sm text-slate-800 block truncate">${t.name}</span>
+            <div class="text-[11px] text-slate-500 font-mono mt-0.5">
+              <span>${t.code}</span> • <span class="line-through text-slate-400">MRP ₹${t.mrp}</span> • <span class="text-blue-600 font-black">B2B ₹${t.b2b}</span>
+            </div>
+          </div>
+          <button onclick="addItemToOrder('${t.code}')" class="shrink-0 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white font-bold text-xs px-3 py-2 rounded-xl border border-blue-200 transition active:scale-95">
+            + जोड़ें
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterCatalog() {
+      const q = document.getElementById("testSearchInput").value.toLowerCase();
+      const filtered = testsData.filter(t => t.name.toLowerCase().includes(q) || t.code.toLowerCase().includes(q));
+      renderTestCatalog(filtered);
+    }
+
+    // Cart / Order Logic
+    function addItemToOrder(code) {
+      const item = testsData.find(t => t.code === code);
+      if (!item) return;
+      if (!orderCart.some(c => c.code === code)) {
+        orderCart.push(item);
+        updateCartDisplay();
+      }
+    }
+
+    function removeItemFromOrder(code) {
+      orderCart = orderCart.filter(c => c.code !== code);
+      updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+      const list = document.getElementById("cartItemList");
+      const badge = document.getElementById("selectedCountBadge");
+      badge.innerText = `${orderCart.length} टेस्ट`;
+
+      if (orderCart.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">कोई टेस्ट सिलेक्ट नहीं है। ऊपर लिस्ट से "+ टेस्ट जोड़ें" दबाएँ।</p>`;
+        document.getElementById("sumMrp").innerText = "₹0";
+        document.getElementById("sumB2b").innerText = "₹0";
+        document.getElementById("sumSavings").innerText = "₹0";
+        return;
+      }
+
+      list.innerHTML = "";
+      let mrpSum = 0;
+      let b2bSum = 0;
+
+      orderCart.forEach(t => {
+        mrpSum += t.mrp;
+        b2bSum += t.b2b;
+
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs";
+        row.innerHTML = `
+          <div class="truncate pr-2">
+            <span class="font-bold text-slate-800 block truncate">${t.name}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${t.code} • B2B: ₹${t.b2b}</span>
+          </div>
+          <button onclick="removeItemFromOrder('${t.code}')" class="text-slate-400 hover:text-red-600 p-1">
+            <i class="fa-solid fa-trash-can text-sm"></i>
+          </button>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById("sumMrp").innerText = `₹${mrpSum}`;
+      document.getElementById("sumB2b").innerText = `₹${b2bSum}`;
+      document.getElementById("sumSavings").innerText = `₹${mrpSum - b2bSum}`;
+    }
+
+    // Google Login & Unique ID Auto Generation
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(e => alert("लॉगिन त्रुटि: " + e.message));
+    }
+
+    function handleLogout() {
+      auth.signOut().then(() => location.reload());
+    }
+
+    auth.onAuthStateChanged(user => {
+      loggedUser = user;
+      const authSlot = document.getElementById("authSlot");
+      const banner = document.getElementById("userProfileBanner");
+      const adminBtn = document.getElementById("adminTopBtn");
+
+      if (user) {
+        banner.classList.remove("hidden");
+        document.getElementById("uAvatar").src = user.photoURL || "https://via.placeholder.com/40";
+        document.getElementById("uName").innerText = user.displayName || "Partner";
+        document.getElementById("uEmail").innerText = user.email;
+
+        authSlot.innerHTML = `
+          <button onclick="handleLogout()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl transition">
+            लॉगआउट
+          </button>
+        `;
+
+        // Check if Admin
+        if (user.email === ADMIN_EMAIL) {
+          adminBtn.classList.remove("hidden");
+          if (!sessionStorage.getItem("admin_popup_closed")) {
+            document.getElementById("adminDirectPopup").classList.remove("hidden");
+          }
+        } else {
+          adminBtn.classList.add("hidden");
+        }
+
+        // Automatic Unique B2B ID Generation & Linking
+        assignOrRetrieveUniqueId(user);
+
+      } else {
+        banner.classList.add("hidden");
+        adminBtn.classList.add("hidden");
+        authSlot.innerHTML = `
+          <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
+            <i class="fa-brands fa-google"></i>
+            <span>Google लॉगिन</span>
+          </button>
+        `;
+        document.getElementById("orderFormUniqueId").value = "";
+      }
+    });
+
+    function closeAdminPopup() {
+      sessionStorage.setItem("admin_popup_closed", "true");
+      document.getElementById("adminDirectPopup").classList.add("hidden");
+    }
+
+    // Ensure Every User Gets A Unique Permanent ID
+    function assignOrRetrieveUniqueId(user) {
+      const userRef = db.ref("users/" + user.uid);
+      userRef.once("value").then(snap => {
+        let val = snap.val();
+        if (val && val.uniqueId) {
+          userAssignedId = val.uniqueId;
+          applyUniqueIdToUI(userAssignedId);
+        } else {
+          // Generate new unique ID (e.g., RX-4982)
+          const randomNum = Math.floor(1000 + Math.random() * 9000);
+          userAssignedId = `RX-${randomNum}`;
+
+          userRef.set({
+            uniqueId: userAssignedId,
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL,
+            createdAt: Date.now()
+          });
+
+          // Also save in reverse mapping for instant lookups
+          db.ref("partner_directory/" + userAssignedId).set({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName
+          });
+
+          applyUniqueIdToUI(userAssignedId);
+        }
+      });
+    }
+
+    function applyUniqueIdToUI(id) {
+      document.getElementById("uUniqueId").innerText = `ID: ${id}`;
+      document.getElementById("orderFormUniqueId").value = id;
+    }
+
+    // Place Order Form Submission
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+
+      if (!loggedUser) {
+        alert("कृपया पहले ऊपर से Google से लॉगिन करें ताकि आपकी यूनिक ID बन सके!");
+        loginWithGoogle();
+        return;
+      }
+
+      if (orderCart.length === 0) {
+        alert("कृपया कम से कम एक टेस्ट सूची से चुनें!");
+        return;
+      }
+
+      const uidCode = userAssignedId;
+      const labName = document.getElementById("orderLabName").value.trim();
+      const patient = document.getElementById("orderPatient").value.trim();
+      const phone = document.getElementById("orderPhone").value.trim();
+      const location = document.getElementById("orderLocation").value.trim();
+      const totalAmount = orderCart.reduce((a, b) => a + b.b2b, 0);
+
+      const orderPayload = {
+        uniqueId: uidCode,
+        userEmail: loggedUser.email,
+        userName: loggedUser.displayName,
+        labName: labName,
+        patient: patient,
+        phone: phone,
+        location: location,
+        tests: orderCart,
+        total: totalAmount,
+        status: "Pending",
+        timestamp: Date.now()
+      };
+
+      // Push order to Firebase Database
+      db.ref("orders").push(orderPayload).then(() => {
+        // Build WhatsApp Message
+        let testListMsg = orderCart.map((t, idx) => `${idx + 1}. [${t.code}] ${t.name} (₹${t.b2b})`).join("%0A");
+        const waMsg = `*ROXX B2B SAMPLE DROP ORDER*%0A---------------------------%0A*यूनिक ID:* ${uidCode}%0A*लैब:* ${encodeURIComponent(labName)}%0A*मरीज़:* ${encodeURIComponent(patient)}%0A*फोन:* ${phone}%0A*पता:* ${encodeURIComponent(location)}%0A---------------------------%0A*टेस्ट सूची:*%0A${testListMsg}%0A---------------------------%0A*कुल B2B देय:* ₹${totalAmount}%0A---------------------------%0A(सैंपल माँझी काउंटर पर ड्रॉप किया जा रहा है)`;
+
+        window.open(`https://wa.me/919153903729?text=${waMsg}`, "_blank");
+        alert("ऑर्डर सफलतापूर्वक दर्ज हो गया और एडमिन को भेजा गया!");
+      });
+    }
+
+    // Real-Time Site Settings Sync (Logo, Address, Phone, Maps)
+    function syncSettings() {
+      db.ref("site_settings").on("value", snap => {
+        const s = snap.val();
+        if (s) {
+          if (s.logoUrl) document.getElementById("siteLogoImg").src = s.logoUrl;
+          if (s.siteName) document.getElementById("siteNameText").innerText = s.siteName;
+          if (s.phone) {
+            document.getElementById("headerPhone").innerText = s.phone;
+            document.getElementById("dynContactPhone").innerText = s.phone;
+          }
+          if (s.address) {
+            document.getElementById("dynContactAddress").innerText = s.address;
+            document.getElementById("deskLocationText").innerText = s.address;
+          }
+          if (s.email) {
+            document.getElementById("deskEmailDisplay").innerText = s.email;
+          }
+          if (s.mapEmbedUrl) {
+            document.getElementById("mapEmbedFrameContainer").innerHTML = `
+              <iframe src="${s.mapEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            `;
+          }
+        }
+      });
+    }
+
+    // Visitor Tracking
+    function trackVisitors() {
+      const vRef = db.ref("stats/visitors");
+      vRef.transaction(c => (c || 0) + 1);
+      vRef.on("value", snap => {
+        document.getElementById("visitorCounter").innerText = snap.val() || 1;
+      });
+    }
+
+    // Reviews (No Dummy Data - Real Submissions Only)
+    function openReviewModal() {
+      if (!loggedUser) {
+        alert("रिव्यू देने के लिए कृपया पहले Google से लॉगिन करें!");
+        loginWithGoogle();
+        return;
+      }
+      document.getElementById("reviewInputModal").classList.remove("hidden");
+    }
+    function closeReviewModal() {
+      document.getElementById("reviewInputModal").classList.add("hidden");
+    }
+
+    function handleSendReview(e) {
+      e.preventDefault();
+      const author = document.getElementById("revAuthorInput").value.trim();
+      const stars = parseInt(document.getElementById("revStarsInput").value);
+      const text = document.getElementById("revCommentInput").value.trim();
+
+      db.ref("reviews").push({
+        author: author,
+        stars: stars,
+        comment: text,
+        userEmail: loggedUser.email,
+        createdAt: Date.now()
+      }).then(() => {
+        closeReviewModal();
+        e.target.reset();
+        alert("आपका रिव्यू सफलतापूर्वक पोस्ट हो गया!");
+      });
+    }
+
+    function loadRealReviews() {
+      db.ref("reviews").on("value", snap => {
+        const list = document.getElementById("reviewsListGrid");
+        list.innerHTML = "";
+        const data = snap.val();
+
+        if (!data) {
+          list.innerHTML = `
+            <div class="col-span-full py-8 text-center text-xs text-slate-400">
+              <i class="fa-regular fa-comment-dots text-2xl text-slate-300 block mb-2"></i>
+              अभी तक कोई रिव्यू नहीं आया है। सबसे पहले आप अपना रिव्यू दें!
+            </div>
+          `;
+          return;
+        }
+
+        Object.keys(data).forEach(id => {
+          const rev = data[id];
+          const div = document.createElement("div");
+          div.className = "bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs";
+          div.innerHTML = `
+            <div class="text-amber-500 mb-1.5">${"⭐".repeat(rev.stars || 5)}</div>
+            <p class="text-slate-700 leading-relaxed font-medium">"${rev.comment}"</p>
+            <div class="font-bold text-slate-900 mt-2 flex items-center justify-between">
+              <span>${rev.author}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${new Date(rev.createdAt).toLocaleDateString()}</span>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+      });
+    }
+
+    // Init
+    window.addEventListener("DOMContentLoaded", () => {
+      renderTestCatalog(testsData);
+      syncSettings();
+      trackVisitors();
+      loadRealReviews();
+    });
+  </script>
+</body>
+  </html>
