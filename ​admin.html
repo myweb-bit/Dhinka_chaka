@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ROXX Admin Management Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'],
+          },
+          colors: {
+            adminBlue: '#1a73e8',
+            adminDark: '#0f172a',
+            adminSurface: '#1e293b'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+  <!-- TOP BAR -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Admin Tag -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-inner">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+        <div>
+          <div class="font-extrabold text-sm sm:text-base tracking-tight leading-tight flex items-center gap-2">
+            <span>ROXX Admin Desk</span>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono uppercase font-bold">Secure</span>
+          </div>
+          <div class="text-[11px] text-slate-400">कंट्रोल व मैनेजमेंट पैनल</div>
+        </div>
+      </div>
+
+      <!-- Action: Back to User Panel & Signout -->
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-700 transition flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-arrow-left"></i> <span>Back to User Panel</span>
+        </a>
+        <button id="adminLogoutBtn" onclick="handleAdminSignOut()" class="hidden text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded-xl transition">
+          लॉगआउट
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
+
+    <!-- 1. AUTH SCREEN (Shows if not logged in or wrong email) -->
+    <div id="authScreen" class="max-w-md mx-auto my-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center space-y-4">
+      <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto text-3xl shadow-sm">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-extrabold text-slate-900">एडमिन वेरिफिकेशन आवश्यक</h2>
+        <p class="text-xs text-slate-500 mt-1">यह पैनल केवल अधिकृत ईमेल के लिए सुरक्षित है:</p>
+        <span class="inline-block mt-2 font-mono text-xs font-bold bg-slate-100 text-slate-800 px-3 py-1 rounded-lg border border-slate-200">
+          roxxdiagnosticcentre@gmail.com
+        </span>
+      </div>
+
+      <div id="authStatusAlert" class="hidden text-xs p-3 rounded-xl"></div>
+
+      <div class="pt-2">
+        <button onclick="loginAdminWithGoogle()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3.5 rounded-2xl shadow transition flex items-center justify-center gap-2 active:scale-95">
+          <i class="fa-brands fa-google text-sm"></i> <span>Google से एडमिन लॉगिन करें</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. PIN LOCK SCREEN (Shows after correct Google login) -->
+    <div id="pinScreen" class="hidden max-w-sm mx-auto my-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center space-y-4">
+      <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center mx-auto text-3xl shadow-sm">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-extrabold text-slate-900">सुरक्षा पिन दर्ज करें</h2>
+        <p class="text-xs text-slate-500 mt-1">एडमिन डैशबोर्ड खोलने के लिए 4-अंकीय पिन डालें।</p>
+      </div>
+
+      <div class="space-y-3">
+        <input type="password" id="inputAdminPin" maxlength="10" placeholder="••••" class="w-full text-center text-xl font-mono tracking-widest p-3 bg-slate-50 border border-slate-300 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600">
+        <p id="pinErrorMsg" class="text-xs text-red-600 font-semibold hidden">गलत पिन! पुनः प्रयास करें।</p>
+        <button onclick="verifyAdminPin()" class="w-full bg-slate-900 hover:bg-black text-white font-bold text-xs py-3.5 rounded-2xl shadow transition active:scale-95">
+          डैशबोर्ड खोलें
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. ACTUAL ADMIN DASHBOARD (Shows after Google Auth + PIN verified) -->
+    <div id="dashboardScreen" class="hidden space-y-6">
+
+      <!-- TOP METRICS STRIP -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कुल विज़िटर्स</span>
+          <span id="metricVisitors" class="text-2xl font-black text-blue-600 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कुल B2B ऑर्डर्स</span>
+          <span id="metricOrders" class="text-2xl font-black text-emerald-600 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">रजिस्टर्ड B2B यूज़र्स</span>
+          <span id="metricUsers" class="text-2xl font-black text-amber-500 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कस्टमर रिव्यू</span>
+          <span id="metricReviews" class="text-2xl font-black text-purple-600 font-mono">0</span>
+        </div>
+      </div>
+
+      <!-- MAIN TABS NAVIGATION -->
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto custom-scroll text-xs font-bold">
+        <button onclick="switchTab('ordersTab')" id="tabBtn-ordersTab" class="tab-btn px-4 py-2 rounded-xl bg-blue-600 text-white shadow-sm">
+          <i class="fa-solid fa-clipboard-list mr-1.5"></i> B2B ऑर्डर्स
+        </button>
+        <button onclick="switchTab('settingsTab')" id="tabBtn-settingsTab" class="tab-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+          <i class="fa-solid fa-sliders mr-1.5"></i> वेबसाइट सेटिंग्स व लोगो
+        </button>
+        <button onclick="switchTab('usersTab')" id="tabBtn-usersTab" class="tab-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+          <i class="fa-solid fa-users mr-1.5"></i> पार्टनर्स ID डायरेक्टरी
+        </button>
+        <button onclick="switchTab('reviewsTab')" id="tabBtn-reviewsTab" class="tab-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+          <i class="fa-solid fa-comments mr-1.5"></i> रिव्यू मॉडरेटर
+        </button>
+      </div>
+
+      <!-- TAB 1: B2B ORDERS MANAGEMENT -->
+      <div id="ordersTab" class="tab-content space-y-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">आए हुए सैंपल ऑर्डर्स (Live Orders)</h3>
+              <p class="text-xs text-slate-500">पार्टनर लैब्स द्वारा भेजे गए सैंपल ड्रॉप ऑर्डर्स की रियल-टाइम लिस्ट</p>
+            </div>
+            <button onclick="loadOrdersRealtime()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl transition">
+              <i class="fa-solid fa-rotate-right mr-1"></i> रिफ्रेश
+            </button>
+          </div>
+
+          <!-- Orders Table Container -->
+          <div class="overflow-x-auto custom-scroll border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">समय</th>
+                  <th class="py-3 px-3">पार्टनर ID</th>
+                  <th class="py-3 px-3">लैब / फोन</th>
+                  <th class="py-3 px-3">मरीज़ / वायल</th>
+                  <th class="py-3 px-3">जाँच सूची</th>
+                  <th class="py-3 px-3 text-right">कुल B2B</th>
+                  <th class="py-3 px-3 text-center">एक्शन</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SITE SETTINGS, LOGO & IMGBB -->
+      <div id="settingsTab" class="tab-content hidden space-y-6">
+        
+        <!-- ImgBB Upload & Logo Customization -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">वेबसाइट लोगो व इमेज अपलोडर (ImgBB)</h3>
+              <p class="text-xs text-slate-500">गैलरी से लोगो फोटो चुनें और एक क्लिक में लाइव वेबसाइट पर सेट करें</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">नया लोगो फोटो चुनें</label>
+              <input type="file" id="logoUploadFile" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+              <p class="text-[10px] text-slate-400 mt-1">ImgBB API के ज़रिए ऑटोमैटिक क्लाउड पर होस्ट होगा।</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <img id="logoLivePreview" src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&q=80" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md">
+              <button onclick="uploadLogoToImgBB()" id="btnUploadLogo" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow active:scale-95 flex items-center gap-2">
+                <i class="fa-solid fa-upload"></i> <span>अपलोड व लोगो सेट करें</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact & Location Settings Form -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-extrabold text-base text-slate-900">वेबसाइट विवरण, फ़ोन, पता व Google Maps</h3>
+          
+          <form onsubmit="handleSaveSiteSettings(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">सेंटर का नाम</label>
+                <input type="text" id="setSiteName" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">हेल्पलाइन / WhatsApp नंबर</label>
+                <input type="text" id="setPhone" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">डेस्क ईमेल</label>
+                <input type="email" id="setEmail" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">काउंटर का पता (Location)</label>
+                <input type="text" id="setAddress" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+            </div>
+
+            <!-- Google Map Embed URL -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Google Maps Embed URL (Iframe Link)</label>
+              <input type="text" id="setMapEmbed" placeholder="https://www.google.com/maps/embed?pb=..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+              <p class="text-[10px] text-slate-400 mt-1">Google Maps पर 'Share' दबाकर 'Embed a map' से `src="..."` वाला लिंक यहाँ पेस्ट करें।</p>
+            </div>
+
+            <!-- Live Map Preview Box -->
+            <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50">
+              <span class="text-xs font-bold text-slate-600 block mb-2">मैप लाइव प्रीव्यू:</span>
+              <div id="adminMapFrameWrapper" class="w-full h-44 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center text-xs text-slate-400">
+                मैप लिंक दर्ज करने पर प्रीव्यू दिखेगा
+              </div>
+            </div>
+
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 px-6 rounded-2xl shadow transition active:scale-95">
+              सेटिंग्स सुरक्षित करें (Save Changes)
+            </button>
+          </form>
+        </div>
+
+        <!-- Security PIN Change Option -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-extrabold text-base text-slate-900">सुरक्षा पिन बदलें</h3>
+          <p class="text-xs text-slate-500">एडमिन पैनल का 4-अंकीय एक्सेस पासवर्ड यहाँ से बदल सकते हैं।</p>
+          <div class="flex flex-col sm:flex-row gap-3 max-w-md">
+            <input type="password" id="setNewPin" placeholder="नया पिन दर्ज करें..." class="text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+            <button onclick="handleChangePin()" class="bg-slate-900 hover:bg-black text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">
+              पिन अपडेट करें
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 3: USER B2B DIRECTORY -->
+      <div id="usersTab" class="tab-content hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">पार्टनर्स ID डायरेक्टरी</h3>
+              <p class="text-xs text-slate-500">Google से लॉगिन करने वाले सभी यूज़र्स और उनकी ऑटो-जेनरेटेड यूनिक B2B ID</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scroll border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">यूनिक B2B ID</th>
+                  <th class="py-3 px-3">यूजर का नाम</th>
+                  <th class="py-3 px-3">Google ईमेल</th>
+                  <th class="py-3 px-3">रजिस्ट्रेशन तिथि</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically Injected -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: REVIEWS MODERATOR -->
+      <div id="reviewsTab" class="tab-content hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-extrabold text-base text-slate-900 mb-1">रिव्यू मॉडरेटर</h3>
+          <p class="text-xs text-slate-500 mb-4">यूज़र्स द्वारा डाले गए वास्तविक रिव्यू। किसी भी अनुचित रिव्यू को यहाँ से हटाएँ।</p>
+
+          <div id="adminReviewsList" class="space-y-3">
+            <!-- Dynamically Loaded -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuPrvfgrXLIxEDcpximEVoQQqvxc8BtEc",
+      authDomain: "youff-4f9e4.firebaseapp.com",
+      databaseURL: "https://youff-4f9e4-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "youff-4f9e4",
+      storageBucket: "youff-4f9e4.firebasestorage.app",
+      messagingSenderId: "623480637701",
+      appId: "1:623480637701:web:4fa379576f49a9960d0f6c"
+    };
+
+    const IMGBB_API_KEY = "8104f8ac745d8dc4621b9d758844b418";
+    const AUTHORIZED_ADMIN_EMAIL = "roxxdiagnosticcentre@gmail.com";
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    let currentAdminUser = null;
+    let isPinUnlocked = sessionStorage.getItem("admin_pin_verified") === "true";
+    let activePinCode = "1234";
+
+    // 1. Google Authentication for Admin
+    function loginAdminWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => {
+        showAuthAlert("लॉगिन असफल: " + err.message, "red");
+      });
+    }
+
+    function handleAdminSignOut() {
+      sessionStorage.removeItem("admin_pin_verified");
+      auth.signOut().then(() => location.reload());
+    }
+
+    auth.onAuthStateChanged(user => {
+      currentAdminUser = user;
+      const authScreen = document.getElementById("authScreen");
+      const pinScreen = document.getElementById("pinScreen");
+      const dashboardScreen = document.getElementById("dashboardScreen");
+      const logoutBtn = document.getElementById("adminLogoutBtn");
+
+      if (user) {
+        logoutBtn.classList.remove("hidden");
+        // Check Strict Email Authorization
+        if (user.email === AUTHORIZED_ADMIN_EMAIL) {
+          authScreen.classList.add("hidden");
+          // Fetch Current Security PIN from RTDB
+          db.ref("site_settings/adminPin").once("value").then(snap => {
+            if (snap.exists()) activePinCode = snap.val();
+
+            if (isPinUnlocked) {
+              pinScreen.classList.add("hidden");
+              dashboardScreen.classList.remove("hidden");
+              initDashboardData();
+            } else {
+              pinScreen.classList.remove("hidden");
+              dashboardScreen.classList.add("hidden");
+            }
+          });
+        } else {
+          // Wrong Email - Block Access
+          authScreen.classList.remove("hidden");
+          pinScreen.classList.add("hidden");
+          dashboardScreen.classList.add("hidden");
+          showAuthAlert(`एक्सेस अस्वीकृत! ईमेल [${user.email}] को एडमिन अधिकार नहीं है।`, "red");
+        }
+      } else {
+        logoutBtn.classList.add("hidden");
+        authScreen.classList.remove("hidden");
+        pinScreen.classList.add("hidden");
+        dashboardScreen.classList.add("hidden");
+      }
+    });
+
+    function showAuthAlert(msg, color) {
+      const el = document.getElementById("authStatusAlert");
+      el.className = `text-xs p-3 rounded-xl ${color === 'red' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      el.innerText = msg;
+      el.classList.remove("hidden");
+    }
+
+    // 2. PIN Verification
+    function verifyAdminPin() {
+      const pin = document.getElementById("inputAdminPin").value.trim();
+      const err = document.getElementById("pinErrorMsg");
+
+      if (pin === activePinCode) {
+        err.classList.add("hidden");
+        sessionStorage.setItem("admin_pin_verified", "true");
+        isPinUnlocked = true;
+        document.getElementById("pinScreen").classList.add("hidden");
+        document.getElementById("dashboardScreen").classList.remove("hidden");
+        initDashboardData();
+      } else {
+        err.classList.remove("hidden");
+      }
+    }
+
+    // Change Security PIN
+    function handleChangePin() {
+      const newPin = document.getElementById("setNewPin").value.trim();
+      if (!newPin || newPin.length < 4) {
+        alert("कृपया कम से कम 4 अक्षरों/अंकों का पिन दर्ज करें!");
+        return;
+      }
+      db.ref("site_settings/adminPin").set(newPin).then(() => {
+        activePinCode = newPin;
+        document.getElementById("setNewPin").value = "";
+        alert("सुरक्षा पिन सफलतापूर्वक बदल दिया गया है!");
+      });
+    }
+
+    // 3. Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.className = "tab-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200";
+      });
+
+      document.getElementById(tabId).classList.remove("hidden");
+      const activeBtn = document.getElementById("tabBtn-" + tabId);
+      activeBtn.className = "tab-btn px-4 py-2 rounded-xl bg-blue-600 text-white shadow-sm";
+    }
+
+    // 4. Initialize Dashboard & Live Data
+    function initDashboardData() {
+      loadStatsCounters();
+      loadOrdersRealtime();
+      loadSettingsIntoForm();
+      loadUsersDirectory();
+      loadReviewsAdmin();
+    }
+
+    function loadStatsCounters() {
+      // Visitors
+      db.ref("stats/visitors").on("value", s => {
+        document.getElementById("metricVisitors").innerText = s.val() || 0;
+      });
+      // Orders Count
+      db.ref("orders").on("value", s => {
+        document.getElementById("metricOrders").innerText = s.exists() ? Object.keys(s.val()).length : 0;
+      });
+      // Users Count
+      db.ref("users").on("value", s => {
+        document.getElementById("metricUsers").innerText = s.exists() ? Object.keys(s.val()).length : 0;
+      });
+      // Reviews Count
+      db.ref("reviews").on("value", s => {
+        document.getElementById("metricReviews").innerText = s.exists() ? Object.keys(s.val()).length : 0;
+      });
+    }
+
+    // 5. Orders Real-Time Handler
+    function loadOrdersRealtime() {
+      db.ref("orders").on("value", snap => {
+        const tbody = document.getElementById("ordersTableBody");
+        tbody.innerHTML = "";
+        const data = snap.val();
+
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">कोई ऑर्डर नहीं मिला।</td></tr>`;
+          return;
+        }
+
+        Object.keys(data).reverse().forEach(key => {
+          const ord = data[key];
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+
+          const testsSummary = ord.tests ? ord.tests.map(t => `<span class="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-mono mr-1">${t.code}</span>`).join("") : "-";
+
+          tr.innerHTML = `
+            <td class="py-3 px-3 text-[10px] text-slate-400 font-mono whitespace-nowrap">${new Date(ord.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>${new Date(ord.timestamp).toLocaleDateString()}</td>
+            <td class="py-3 px-3 font-mono font-bold text-blue-700">${ord.uniqueId || '-'}</td>
+            <td class="py-3 px-3">
+              <span class="font-bold text-slate-900 block">${ord.labName}</span>
+              <span class="text-[11px] text-slate-500 font-mono">${ord.phone}</span>
+            </td>
+            <td class="py-3 px-3 text-slate-700 font-medium">${ord.patient}</td>
+            <td class="py-3 px-3 max-w-[200px] truncate">${testsSummary}</td>
+            <td class="py-3 px-3 text-right font-extrabold text-blue-600">₹${ord.total}</td>
+            <td class="py-3 px-3 text-center whitespace-nowrap">
+              <a href="https://wa.me/91${ord.phone}" target="_blank" class="text-emerald-600 hover:text-emerald-700 p-1.5 text-sm" title="WhatsApp Chat">
+                <i class="fa-brands fa-whatsapp"></i>
+              </a>
+              <button onclick="deleteOrder('${key}')" class="text-slate-400 hover:text-red-600 p-1.5 text-sm" title="डिलीट">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function deleteOrder(key) {
+      if (confirm("क्या आप वाकई इस ऑर्डर को हटाना चाहते हैं?")) {
+        db.ref("orders/" + key).remove();
+      }
+    }
+
+    // 6. ImgBB Upload Handler
+    function uploadLogoToImgBB() {
+      const fileInput = document.getElementById("logoUploadFile");
+      const btn = document.getElementById("btnUploadLogo");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("कृपया पहले अपलोड करने के लिए एक फोटो चुनें!");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> अपलोडिंग...`;
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-upload"></i> <span>अपलोड व लोगो सेट करें</span>`;
+
+        if (res.success) {
+          const uploadedUrl = res.data.url;
+          document.getElementById("logoLivePreview").src = uploadedUrl;
+
+          // Automatically Save to site_settings RTDB
+          db.ref("site_settings/logoUrl").set(uploadedUrl).then(() => {
+            alert("लोगो सफलतापूर्वक अपलोड होकर वेबसाइट पर लाइव हो गया!");
+          });
+        } else {
+          alert("अपलोड में समस्या: " + (res.error ? res.error.message : "त्रुटि"));
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-upload"></i> <span>अपलोड व लोगो सेट करें</span>`;
+        alert("अपलोड विफल: " + err.message);
+      });
+    }
+
+    // 7. Site Settings Load & Save
+    function loadSettingsIntoForm() {
+      db.ref("site_settings").on("value", snap => {
+        const s = snap.val() || {};
+        document.getElementById("setSiteName").value = s.siteName || "ROXX Diagnostic Centre";
+        document.getElementById("setPhone").value = s.phone || "+91 9153903729";
+        document.getElementById("setEmail").value = s.email || "roxxdiagnosticcentre@gmail.com";
+        document.getElementById("setAddress").value = s.address || "मांझी (Manjhi), सारण जिला (बिहार)";
+        document.getElementById("setMapEmbed").value = s.mapEmbedUrl || "";
+
+        if (s.logoUrl) {
+          document.getElementById("logoLivePreview").src = s.logoUrl;
+        }
+
+        if (s.mapEmbedUrl) {
+          document.getElementById("adminMapFrameWrapper").innerHTML = `
+            <iframe src="${s.mapEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+          `;
+        }
+      });
+    }
+
+    function handleSaveSiteSettings(e) {
+      e.preventDefault();
+      const payload = {
+        siteName: document.getElementById("setSiteName").value.trim(),
+        phone: document.getElementById("setPhone").value.trim(),
+        email: document.getElementById("setEmail").value.trim(),
+        address: document.getElementById("setAddress").value.trim(),
+        mapEmbedUrl: document.getElementById("setMapEmbed").value.trim()
+      };
+
+      db.ref("site_settings").update(payload).then(() => {
+        alert("सेटिंग्स सफलतापूर्वक सुरक्षित हो गईं! यूजर पैनल पर बदलाव लाइव हो चुके हैं।");
+      });
+    }
+
+    // 8. Users Directory
+    function loadUsersDirectory() {
+      db.ref("users").on("value", snap => {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
+        const data = snap.val();
+
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">कोई यूजर डेटा नहीं मिला।</td></tr>`;
+          return;
+        }
+
+        Object.keys(data).forEach(uid => {
+          const u = data[uid];
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-mono font-bold text-blue-700">${u.uniqueId || '-'}</td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${u.name || 'B2B Partner'}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-500">${u.email || '-'}</td>
+            <td class="py-2.5 px-3 text-[11px] text-slate-400 font-mono">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    // 9. Reviews Moderator
+    function loadReviewsAdmin() {
+      db.ref("reviews").on("value", snap => {
+        const list = document.getElementById("adminReviewsList");
+        list.innerHTML = "";
+        const data = snap.val();
+
+        if (!data) {
+          list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">कोई रिव्यू मौजूद नहीं है।</p>`;
+          return;
+        }
+
+        Object.keys(data).forEach(id => {
+          const r = data[id];
+          const div = document.createElement("div");
+          div.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs";
+          div.innerHTML = `
+            <div>
+              <div class="font-bold text-slate-900">${r.author} <span class="text-amber-500 ml-1.5">${"⭐".repeat(r.stars || 5)}</span></div>
+              <p class="text-slate-600 font-medium mt-0.5">"${r.comment}"</p>
+              <span class="text-[10px] text-slate-400 font-mono">${r.userEmail || ''} • ${new Date(r.createdAt).toLocaleDateString()}</span>
+            </div>
+            <button onclick="deleteReviewAdmin('${id}')" class="text-slate-400 hover:text-red-600 p-2 text-sm" title="रिव्यू डिलीट करें">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          `;
+          list.appendChild(div);
+        });
+      });
+    }
+
+    function deleteReviewAdmin(id) {
+      if (confirm("क्या आप इस रिव्यू को यूजर पैनल से हटाना चाहते हैं?")) {
+        db.ref("reviews/" + id).remove();
+      }
+    }
+  </script>
+</body>
+</html>
