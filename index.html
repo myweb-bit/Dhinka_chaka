@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ROXX Diagnostic Centre | B2B Partner Desk</title>
+  <title>ROXX Diagnostic Centre | B2B Portal</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts & FontAwesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
@@ -22,7 +20,7 @@
           },
           colors: {
             brandBlue: '#1a73e8',
-            brandDark: '#1e293b',
+            brandDark: '#0f172a',
             brandSurface: '#f8fafc',
             brandBorder: '#e2e8f0'
           }
@@ -47,338 +45,602 @@
     }
   </style>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
-  <!-- TOP HEADER NOTIFICATION -->
-  <div class="bg-blue-600 text-white text-xs sm:text-sm font-semibold py-2 px-4 shadow-sm">
-    <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2 truncate">
-        <span class="bg-white text-blue-700 text-[11px] font-black px-1.5 py-0.5 rounded uppercase">B2B Desk</span>
-        <span class="truncate">सुबह 8:30 AM तक ड्रॉप करने पर सेम-डे रिपोर्ट उपलब्ध!</span>
+  <!-- ========================================== -->
+  <!-- 1. USER PANEL INTERFACE                    -->
+  <!-- ========================================== -->
+  <div id="userPanelWrapper" class="flex flex-col min-h-screen">
+    
+    <!-- TOP NOTIFICATION -->
+    <div class="bg-blue-600 text-white text-xs sm:text-sm font-semibold py-2 px-4 shadow-sm">
+      <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 truncate">
+          <span class="bg-white text-blue-700 text-[11px] font-black px-1.5 py-0.5 rounded uppercase">B2B Desk</span>
+          <span class="truncate">सुबह 8:30 AM तक ड्रॉप करने पर सेम-डे रिपोर्ट उपलब्ध!</span>
+        </div>
+        <a href="tel:+919153903729" class="shrink-0 flex items-center gap-1.5 hover:underline font-mono">
+          <i class="fa-solid fa-phone text-xs"></i> <span id="headerPhone" class="hidden sm:inline">+91 9153903729</span>
+        </a>
       </div>
-      <a href="tel:+919153903729" class="shrink-0 flex items-center gap-1.5 hover:underline font-mono">
-        <i class="fa-solid fa-phone text-xs"></i> <span id="headerPhone" class="hidden sm:inline">+91 9153903729</span>
-      </a>
     </div>
-  </div>
 
-  <!-- NAVIGATION BAR -->
-  <header class="bg-white border-b border-brandBorder sticky top-0 z-40 shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-      
-      <!-- Brand Logo / Name (3-Tap Secret Trigger) -->
-      <div class="flex items-center gap-3 cursor-pointer select-none" id="brandLogoTrigger">
-        <img id="siteLogoImg" src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&q=80" alt="Logo" class="w-10 h-10 object-cover rounded-xl border border-brandBorder shadow-sm active:scale-95 transition">
-        <div>
-          <div id="siteNameText" class="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">ROXX Diagnostic Centre</div>
-          <div class="text-[11px] sm:text-xs text-slate-500 font-medium">Authorized Dr. Lal PathLabs Desk</div>
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-white border-b border-brandBorder sticky top-0 z-40 shadow-sm">
+      <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 cursor-pointer select-none" id="brandLogoTrigger">
+          <img id="siteLogoImg" src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&q=80" alt="Logo" class="w-10 h-10 object-cover rounded-xl border border-brandBorder shadow-sm active:scale-95 transition">
+          <div>
+            <div id="siteNameText" class="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">ROXX Diagnostic Centre</div>
+            <div class="text-[11px] sm:text-xs text-slate-500 font-medium">Authorized Dr. Lal PathLabs Desk</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="adminDirectBtn" onclick="switchToAdminPanel()" class="hidden text-xs bg-slate-900 hover:bg-black text-white font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-amber-400"></i>
+            <span>एडमिन पैनल</span>
+          </button>
+
+          <div id="authSlot">
+            <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
+              <i class="fa-brands fa-google"></i>
+              <span>Google लॉगिन</span>
+            </button>
+          </div>
         </div>
       </div>
+    </header>
 
-      <!-- Right Nav / Auth Profile -->
-      <div class="flex items-center gap-2">
-        <a id="adminTopBtn" href="admin.html" class="hidden text-xs bg-slate-900 hover:bg-black text-white font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
-          <i class="fa-solid fa-shield-halved text-amber-400"></i>
-          <span>एडमिन पैनल</span>
-        </a>
-
-        <div id="authSlot">
-          <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
-            <i class="fa-brands fa-google"></i>
-            <span>Google लॉगिन</span>
+    <!-- USER PROFILE BANNER -->
+    <div id="userProfileBanner" class="hidden bg-white border-b border-brandBorder p-4 shadow-sm">
+      <div class="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50 to-indigo-50/60 border border-blue-200 p-4 rounded-2xl">
+        <div class="flex items-center gap-3">
+          <img id="uAvatar" src="" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="uName" class="font-bold text-sm text-slate-900"></span>
+              <span class="bg-blue-600 text-white font-mono font-bold text-[11px] px-2 py-0.5 rounded-md" id="uUniqueId">ID: LOADING...</span>
+            </div>
+            <div class="text-xs font-mono text-slate-700 font-semibold mt-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-id-card text-blue-600"></i>
+              <span>पार्टनर कार्ड: <strong id="uCardNumber" class="text-blue-800 tracking-wider">RX-CARD-••••-••••</strong></span>
+            </div>
+            <div id="uEmail" class="text-[11px] text-slate-500 font-mono mt-0.5"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 text-xs">
+          <button onclick="handleLogout()" class="text-slate-600 hover:text-red-600 font-medium px-3.5 py-1.5 border border-slate-300 rounded-lg bg-white shadow-sm">
+            लॉगआउट
           </button>
         </div>
       </div>
     </div>
-  </header>
 
-  <!-- USER B2B PROFILE & DIGITAL PARTNER CARD -->
-  <div id="userProfileBanner" class="hidden bg-white border-b border-brandBorder p-4 shadow-sm">
-    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50 to-indigo-50/60 border border-blue-200 p-4 rounded-2xl">
-      <div class="flex items-center gap-3">
-        <img id="uAvatar" src="" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span id="uName" class="font-bold text-sm text-slate-900"></span>
-            <span class="bg-blue-600 text-white font-mono font-bold text-[11px] px-2 py-0.5 rounded-md" id="uUniqueId">ID: LOADING...</span>
+    <!-- MAIN BODY -->
+    <main class="max-w-4xl mx-auto px-4 py-5 w-full flex-1 space-y-6">
+      
+      <!-- HERO PROMO BOX -->
+      <div class="bg-white rounded-3xl p-5 sm:p-7 border border-brandBorder shadow-sm space-y-3">
+        <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
+          <i class="fa-solid fa-certificate"></i> B2B DAILY PARTNER OFFER
+        </div>
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
+          अस्पतालों, क्लिनिक्स और पैथोलॉजी लैब्स के लिए विशेष दरें
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          Google से लॉगिन करें, अपनी <strong>ऑटोमैटिक यूनिक B2B ID व डिजिटल पार्टनर कार्ड</strong> प्राप्त करें और सीधे सैंपल ऑर्डर भेजें।
+        </p>
+        <div class="pt-2 flex flex-wrap gap-4 text-xs font-medium text-slate-600 border-t border-slate-100">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-phone text-blue-600"></i> <span id="dynContactPhone">+91 9153903729</span>
           </div>
-          <div class="text-xs font-mono text-slate-700 font-semibold mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-id-card text-blue-600"></i>
-            <span>पार्टनर कार्ड: <strong id="uCardNumber" class="text-blue-800 tracking-wider">RX-CARD-••••-••••</strong></span>
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-location-dot text-blue-600"></i> <span id="dynContactAddress">मांझी (Manjhi), सारण, बिहार</span>
           </div>
-          <div id="uEmail" class="text-[11px] text-slate-500 font-mono mt-0.5"></div>
-        </div>
-      </div>
-      <div class="flex items-center justify-end gap-2 text-xs">
-        <button onclick="handleLogout()" class="text-slate-600 hover:text-red-600 font-medium px-3.5 py-1.5 border border-slate-300 rounded-lg bg-white shadow-sm">
-          लॉगआउट
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MAIN WRAPPER -->
-  <main class="max-w-4xl mx-auto px-4 py-5 w-full flex-1 space-y-6">
-
-    <!-- HERO PROMO BOX -->
-    <div class="bg-white rounded-3xl p-5 sm:p-7 border border-brandBorder shadow-sm space-y-3">
-      <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
-        <i class="fa-solid fa-certificate"></i> B2B DAILY PARTNER OFFER
-      </div>
-      <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
-        अस्पतालों, क्लिनिक्स और पैथोलॉजी लैब्स के लिए विशेष दरें
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-        Google से लॉगिन करें, अपनी <strong>ऑटोमैटिक यूनिक B2B ID व डिजिटल पार्टनर कार्ड</strong> प्राप्त करें और सीधे सैंपल ऑर्डर भेजें।
-      </p>
-
-      <div class="pt-2 flex flex-wrap gap-4 text-xs font-medium text-slate-600 border-t border-slate-100">
-        <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-phone text-blue-600"></i> <span id="dynContactPhone">+91 9153903729</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-location-dot text-blue-600"></i> <span id="dynContactAddress">मांझी (Manjhi), सारण, बिहार</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- MANDATORY RULES 4 CARDS -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
-        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-fingerprint"></i> ऑटो यूनिक ID
-        </div>
-        <p class="text-[11px] text-slate-600 leading-normal">लॉगिन करते ही आपकी स्थायी ID व कार्ड बनेगा, वायल पर यही ID लिखें।</p>
-      </div>
-      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
-        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-clock-rotate-left"></i> 72-घंटे नियम
-        </div>
-        <p class="text-[11px] text-slate-600 leading-normal">2-3 दिन लगातार सैंपल न आने पर B2B छूट रोक दी जाएगी।</p>
-      </div>
-      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
-        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-truck-ramp-box"></i> सेल्फ ड्रॉप
-        </div>
-        <p class="text-[11px] text-slate-600 leading-normal">सही वायल में मांझी काउंटर पर ड्रॉप करने की ज़िम्मेदारी लैब की होगी।</p>
-      </div>
-      <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
-        <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-vials"></i> नो चेरी-पिकिंग
-        </div>
-        <p class="text-[11px] text-slate-600 leading-normal">स्पेशल टेस्ट्स के साथ रूटीन सैंपल भी देना आवश्यक है।</p>
-      </div>
-    </div>
-
-    <!-- LAB PHOTOS & FACILITY GALLERY -->
-    <div id="labPhotosSection" class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-3">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="font-bold text-base text-slate-900">लैब इंफ्रास्ट्रक्चर एवं मशीनें</h3>
-          <p class="text-xs text-slate-500">विश्वसनीय डायग्नोस्टिक्स व उच्च गुणवत्तायुक्त लैब सुविधाएं</p>
-        </div>
-        <span class="text-xs text-blue-600 font-bold"><i class="fa-solid fa-images mr-1"></i> लैब गैलरी</span>
-      </div>
-
-      <div id="labPhotosGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <!-- Rendered dynamically from Firebase 'lab_photos' node -->
-      </div>
-    </div>
-
-    <!-- SEARCH & TEST CATALOG -->
-    <div class="space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">जाँच प्रोफाइल एवं B2B रेट लिस्ट</h2>
-          <p class="text-xs text-slate-500">टेस्ट चुनें और नीचे अपना B2B सैंपल ऑर्डर तैयार करें</p>
-        </div>
-        <div class="relative w-full sm:w-72">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
-          <input type="text" id="testSearchInput" oninput="filterCatalog()" placeholder="टेस्ट नाम या कोड खोजें..." class="w-full text-xs pl-9 pr-3 py-2.5 bg-white border border-brandBorder rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
         </div>
       </div>
 
-      <!-- Test Catalog Cards Grid -->
-      <div id="testCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scroll p-1">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-    <!-- ORDER / SAMPLE DROP FORM & ADVANCED PAYMENT CARD -->
-    <div id="orderBookingCard" class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
-      <div class="flex items-center justify-between border-b border-brandBorder pb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
-            <i class="fa-solid fa-bag-shopping"></i>
+      <!-- RULES STRIP -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+          <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-fingerprint"></i> ऑटो यूनिक ID
           </div>
+          <p class="text-[11px] text-slate-600 leading-normal">लॉगिन करते ही स्थायी ID व कार्ड बनेगा, वायल पर यही ID लिखें।</p>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+          <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-clock-rotate-left"></i> 72-घंटे नियम
+          </div>
+          <p class="text-[11px] text-slate-600 leading-normal">2-3 दिन लगातार सैंपल न आने पर B2B छूट रोक दी जाएगी।</p>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+          <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-truck-ramp-box"></i> सेल्फ ड्रॉप
+          </div>
+          <p class="text-[11px] text-slate-600 leading-normal">सही वायल में मांझी काउंटर पर ड्रॉप करने की ज़िम्मेदारी लैब की होगी।</p>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-brandBorder shadow-sm">
+          <div class="font-bold text-xs text-blue-700 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-vials"></i> नो चेरी-पिकिंग
+          </div>
+          <p class="text-[11px] text-slate-600 leading-normal">स्पेशल टेस्ट्स के साथ रूटीन सैंपल भी देना आवश्यक है।</p>
+        </div>
+      </div>
+
+      <!-- LAB GALLERY -->
+      <div id="labPhotosSection" class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
           <div>
-            <h3 class="font-bold text-sm text-slate-900">B2B सैंपल ड्रॉप ऑर्डर</h3>
-            <p class="text-[11px] text-slate-500">चुने गए टेस्ट्स और पार्टनर विवरण भरें</p>
+            <h3 class="font-bold text-base text-slate-900">लैब इंफ्रास्ट्रक्चर एवं मशीनें</h3>
+            <p class="text-xs text-slate-500">विश्वसनीय डायग्नोस्टिक्स व उच्च गुणवत्तायुक्त लैब सुविधाएं</p>
           </div>
+          <span class="text-xs text-blue-600 font-bold"><i class="fa-solid fa-images mr-1"></i> लैब गैलरी</span>
         </div>
-        <span id="selectedCountBadge" class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">0 टेस्ट</span>
+        <div id="labPhotosGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
       </div>
 
-      <!-- Selected Items inside cart -->
-      <div id="cartItemList" class="space-y-2 max-h-48 overflow-y-auto custom-scroll">
-        <p class="text-xs text-slate-400 text-center py-6">कोई टेस्ट सिलेक्ट नहीं है। ऊपर लिस्ट से "+ जोड़ें" दबाएँ।</p>
-      </div>
-
-      <!-- Price Breakdown -->
-      <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 text-xs">
-        <div class="flex justify-between text-slate-500">
-          <span>कुल MRP:</span>
-          <span id="sumMrp" class="line-through">₹0</span>
-        </div>
-        <div class="flex justify-between font-bold text-slate-900 text-sm">
-          <span>B2B कुल देय राशि:</span>
-          <span id="sumB2b" class="text-blue-600 font-extrabold text-base">₹0</span>
-        </div>
-        <div class="flex justify-between text-[11px] text-emerald-600 font-semibold">
-          <span>आपकी बचत:</span>
-          <span id="sumSavings">₹0</span>
-        </div>
-      </div>
-
-      <!-- PAYMENT QR & UNIQUE PARTNER CARD LINK -->
-      <div class="bg-gradient-to-br from-blue-50/70 to-slate-50 border border-blue-200 rounded-2xl p-4 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-blue-100 pb-2">
-          <div class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-            <i class="fa-solid fa-qrcode text-blue-600 text-sm"></i>
-            <span>B2B UPI पेमेंट काउंटर</span>
+      <!-- TEST SEARCH & CATALOG -->
+      <div class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">जाँच प्रोफाइल एवं B2B रेट लिस्ट</h2>
+            <p class="text-xs text-slate-500">टेस्ट चुनें और नीचे अपना B2B सैंपल ऑर्डर तैयार करें</p>
           </div>
-          <div class="text-[11px] text-blue-800 font-mono font-bold">
-            लिंक्ड कार्ड: <span id="paymentCardTag">लॉगिन आवश्यक</span>
+          <div class="relative w-full sm:w-72">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+            <input type="text" id="testSearchInput" oninput="filterCatalog()" placeholder="टेस्ट नाम या कोड खोजें..." class="w-full text-xs pl-9 pr-3 py-2.5 bg-white border border-brandBorder rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
-          <img id="paymentQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=9153903729@okbizaxis" alt="Payment QR" class="w-32 h-32 rounded-lg border border-slate-200 object-contain shadow-sm bg-white">
-          <div class="text-xs space-y-2 text-slate-600 text-center sm:text-left flex-1">
-            <p class="font-bold text-slate-800">QR कोड स्कैन करके देय राशि भेजें</p>
-            <p class="text-[11px] text-slate-500">भुगतान के बाद मिला 12-अंकीय UPI UTR/ट्रांजेक्शन नंबर अथवा स्क्रीनशॉट दर्ज करें ताकि काउंटर पर आपका कार्ड नंबर वेरिफाई हो सके।</p>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-0.5">UPI UTR / संदर्भ संख्या (वैकल्पिक):</label>
-                <input type="text" id="paymentUtrNumber" placeholder="उदा. 12-अंकीय UTR नंबर" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-600 font-mono">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-0.5">पेमेंट स्क्रीनशॉट फ़ाइल:</label>
-                <input type="file" id="paymentProofFile" accept="image/*" class="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full">
+        <div id="testCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scroll p-1"></div>
+      </div>
+
+      <!-- ORDER VOUCHER & ADVANCED PAYMENT -->
+      <div id="orderBookingCard" class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-brandBorder pb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-bag-shopping"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">B2B सैंपल ड्रॉप ऑर्डर</h3>
+              <p class="text-[11px] text-slate-500">चुने गए टेस्ट्स और पार्टनर विवरण भरें</p>
+            </div>
+          </div>
+          <span id="selectedCountBadge" class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">0 टेस्ट</span>
+        </div>
+
+        <div id="cartItemList" class="space-y-2 max-h-48 overflow-y-auto custom-scroll">
+          <p class="text-xs text-slate-400 text-center py-6">कोई टेस्ट सिलेक्ट नहीं है। ऊपर लिस्ट से "+ जोड़ें" दबाएँ।</p>
+        </div>
+
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 text-xs">
+          <div class="flex justify-between text-slate-500">
+            <span>कुल MRP:</span>
+            <span id="sumMrp" class="line-through">₹0</span>
+          </div>
+          <div class="flex justify-between font-bold text-slate-900 text-sm">
+            <span>B2B कुल देय राशि:</span>
+            <span id="sumB2b" class="text-blue-600 font-extrabold text-base">₹0</span>
+          </div>
+          <div class="flex justify-between text-[11px] text-emerald-600 font-semibold">
+            <span>आपकी बचत:</span>
+            <span id="sumSavings">₹0</span>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-50/70 to-slate-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-blue-100 pb-2">
+            <div class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-qrcode text-blue-600 text-sm"></i>
+              <span>B2B UPI पेमेंट काउंटर</span>
+            </div>
+            <div class="text-[11px] text-blue-800 font-mono font-bold">
+              लिंक्ड कार्ड: <span id="paymentCardTag">लॉगिन आवश्यक</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
+            <img id="paymentQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=9153903729@okbizaxis" alt="Payment QR" class="w-32 h-32 rounded-lg border border-slate-200 object-contain shadow-sm bg-white">
+            <div class="text-xs space-y-2 text-slate-600 text-center sm:text-left flex-1">
+              <p class="font-bold text-slate-800">QR कोड स्कैन करके देय राशि भेजें</p>
+              <p class="text-[11px] text-slate-500">भुगतान के बाद मिला 12-अंकीय UPI UTR/ट्रांजेक्शन नंबर अथवा स्क्रीनशॉट दर्ज करें।</p>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-0.5">UPI UTR / संदर्भ संख्या (वैकल्पिक):</label>
+                  <input type="text" id="paymentUtrNumber" placeholder="12-अंकीय UTR नंबर" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-0.5">पेमेंट स्क्रीनशॉट फ़ाइल:</label>
+                  <input type="file" id="paymentProofFile" accept="image/*" class="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full">
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <form onsubmit="handlePlaceOrder(event)" class="space-y-3 pt-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">आपकी यूनिक B2B ID *</label>
+              <input type="text" id="orderFormUniqueId" readonly placeholder="लॉगिन करने पर स्वतः दर्ज होगा" class="w-full text-xs font-mono font-bold p-2.5 bg-slate-100 border border-brandBorder rounded-xl text-blue-700 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">यूनिक पार्टनर कार्ड नंबर *</label>
+              <input type="text" id="orderFormCardNumber" readonly placeholder="लॉगिन करने पर स्वतः दर्ज होगा" class="w-full text-xs font-mono font-bold p-2.5 bg-slate-100 border border-brandBorder rounded-xl text-blue-800 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">लैब / क्लिनिक का नाम *</label>
+              <input type="text" id="orderLabName" required placeholder="लैब या क्लिनिक का नाम दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">मरीज़ का नाम व वायल विवरण *</label>
+              <input type="text" id="orderPatient" required placeholder="मरीज़ का नाम और वायल विवरण दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">मोबाइल नंबर *</label>
+              <input type="tel" id="orderPhone" required placeholder="10 अंकों का मोबाइल नंबर दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">लैब का पता / स्थान *</label>
+              <input type="text" id="orderLocation" required placeholder="लैब का पूरा पता दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmitOrder" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span id="btnSubmitText">भुगतान सत्यापित करें और WhatsApp पर भेजें (Send to WhatsApp)</span>
+          </button>
+        </form>
       </div>
 
-      <!-- Sample Order Form Inputs -->
-      <form onsubmit="handlePlaceOrder(event)" class="space-y-3 pt-2">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <!-- REVIEWS LIST -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">आपकी यूनिक B2B ID *</label>
-            <input type="text" id="orderFormUniqueId" readonly placeholder="लॉगिन करने पर स्वतः दर्ज होगा" class="w-full text-xs font-mono font-bold p-2.5 bg-slate-100 border border-brandBorder rounded-xl text-blue-700 outline-none">
+            <h3 class="font-bold text-base text-slate-900">पार्टनर समीक्षाएँ</h3>
+            <p class="text-xs text-slate-500">हमारे साथ जुड़े B2B पार्टनर्स के अनुभव</p>
+          </div>
+          <button onclick="openReviewModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-pen-nib text-blue-600"></i>
+            <span>रिव्यू लिखें</span>
+          </button>
+        </div>
+        <div id="reviewsListGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+      </div>
+
+      <!-- LOCATION / MAP -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-3">
+        <h3 class="font-bold text-base text-slate-900">सैंपल ड्रॉप डेस्क लोकेशन</h3>
+        <p id="deskLocationText" class="text-xs text-slate-600">मांझी (Manjhi), सारण जिला (बिहार)</p>
+        <div id="mapEmbedFrameContainer" class="w-full h-56 rounded-2xl overflow-hidden border border-brandBorder bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+          <span id="mapNotice">गूगल मैप लोड हो रहा है...</span>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-brandBorder py-6 mt-8">
+      <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div>© 2026 ROXX Diagnostic Centre. सर्वाधिकार सुरक्षित।</div>
+        <div class="flex items-center gap-3">
+          <span>विजिटर: <strong id="visitorCounter" class="text-slate-800 font-mono">0</strong></span>
+          <span>•</span>
+          <span id="deskEmailDisplay" class="font-mono">roxxdiagnosticcentre@gmail.com</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. ADMIN PANEL INTERFACE (BUILT-IN)        -->
+  <!-- ========================================== -->
+  <div id="adminPanelWrapper" class="hidden flex-col min-h-screen bg-slate-100">
+    
+    <header class="bg-slate-900 text-white sticky top-0 z-50 border-b border-slate-800 shadow-md">
+      <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-inner">
+            <i class="fa-solid fa-shield-halved"></i>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">यूनिक पार्टनर कार्ड नंबर *</label>
-            <input type="text" id="orderFormCardNumber" readonly placeholder="लॉगिन करने पर स्वतः दर्ज होगा" class="w-full text-xs font-mono font-bold p-2.5 bg-slate-100 border border-brandBorder rounded-xl text-blue-800 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">लैब / क्लिनिक का नाम *</label>
-            <input type="text" id="orderLabName" required placeholder="लैब या क्लिनिक का नाम दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">मरीज़ का नाम व वायल विवरण *</label>
-            <input type="text" id="orderPatient" required placeholder="मरीज़ का नाम और वायल विवरण दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">मोबाइल नंबर *</label>
-            <input type="tel" id="orderPhone" required placeholder="10 अंकों का मोबाइल नंबर दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">लैब का पता / स्थान *</label>
-            <input type="text" id="orderLocation" required placeholder="लैब का पूरा पता दर्ज करें" class="w-full text-xs p-2.5 bg-white border border-brandBorder rounded-xl focus:ring-2 focus:ring-blue-600 outline-none">
+            <div class="font-extrabold text-sm sm:text-base tracking-tight leading-tight flex items-center gap-2">
+              <span>ROXX Admin Portal</span>
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono uppercase font-bold">Secure Root</span>
+            </div>
+            <div class="text-[11px] text-slate-400">ऑर्डर्स, टेस्ट्स, कार्ड्स व सेटिंग्स प्रबंधन</div>
           </div>
         </div>
 
-        <button type="submit" id="btnSubmitOrder" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 active:scale-95">
-          <i class="fa-brands fa-whatsapp text-base"></i>
-          <span id="btnSubmitText">भुगतान सत्यापित करें और WhatsApp पर भेजें (Send to WhatsApp)</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- REVIEWS SECTION -->
-    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="font-bold text-base text-slate-900">पार्टनर समीक्षाएँ</h3>
-          <p class="text-xs text-slate-500">हमारे साथ जुड़े B2B पार्टनर्स के अनुभव</p>
+        <div class="flex items-center gap-2">
+          <button onclick="switchToUserPanel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back to User Panel</span>
+          </button>
+          <button onclick="handleAdminSignOut()" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded-xl transition">
+            लॉगआउट
+          </button>
         </div>
-        <button onclick="openReviewModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-pen-nib text-blue-600"></i>
-          <span>रिव्यू लिखें</span>
-        </button>
       </div>
+    </header>
 
-      <div id="reviewsListGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-    <!-- LOCATION PREVIEW -->
-    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brandBorder shadow-sm space-y-3">
-      <h3 class="font-bold text-base text-slate-900">सैंपल ड्रॉप डेस्क लोकेशन</h3>
-      <p id="deskLocationText" class="text-xs text-slate-600">मांझी (Manjhi), सारण जिला (बिहार)</p>
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
       
-      <div id="mapEmbedFrameContainer" class="w-full h-56 rounded-2xl overflow-hidden border border-brandBorder bg-slate-100 flex items-center justify-center text-xs text-slate-400">
-        <span id="mapNotice">गूगल मैप लोड हो रहा है...</span>
+      <!-- ADMIN METRICS -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कुल विज़िटर्स</span>
+          <span id="metricVisitors" class="text-2xl font-black text-blue-600 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कुल B2B ऑर्डर्स</span>
+          <span id="metricOrders" class="text-2xl font-black text-emerald-600 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">B2B कार्ड पार्टनर्स</span>
+          <span id="metricUsers" class="text-2xl font-black text-amber-500 font-mono">0</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">कुल एक्टिव टेस्ट्स</span>
+          <span id="metricTestsCount" class="text-2xl font-black text-purple-600 font-mono">0</span>
+        </div>
       </div>
-    </div>
 
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-brandBorder py-6 mt-8">
-    <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-      <div>© 2026 ROXX Diagnostic Centre. सर्वाधिकार सुरक्षित।</div>
-      <div class="flex items-center gap-3">
-        <span>विजिटर: <strong id="visitorCounter" class="text-slate-800 font-mono">0</strong></span>
-        <span>•</span>
-        <span id="deskEmailDisplay" class="font-mono">roxxdiagnosticcentre@gmail.com</span>
+      <!-- TABS -->
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto custom-scroll text-xs font-bold">
+        <button onclick="switchAdminTab('adminOrdersTab')" id="atab-adminOrdersTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-blue-600 text-white shadow-sm flex items-center gap-2 shrink-0">
+          <i class="fa-solid fa-boxes-packing"></i> B2B ऑर्डर्स, कार्ड व UTR
+        </button>
+        <button onclick="switchAdminTab('adminTestsTab')" id="atab-adminTestsTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-vial-circle-check"></i> टेस्ट्स रेट लिस्ट मैनेजर (Add/Edit)
+        </button>
+        <button onclick="switchAdminTab('adminGalleryTab')" id="atab-adminGalleryTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-images"></i> लैब फोटो गैलरी
+        </button>
+        <button onclick="switchAdminTab('adminSettingsTab')" id="atab-adminSettingsTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-sliders"></i> लोगो, QR व सेटिंग्स
+        </button>
+        <button onclick="switchAdminTab('adminUsersTab')" id="atab-adminUsersTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-id-card"></i> पार्टनर्स कार्ड डायरेक्टरी
+        </button>
+        <button onclick="switchAdminTab('adminReviewsTab')" id="atab-adminReviewsTab" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-comments"></i> रिव्यूज मॉडरेटर
+        </button>
       </div>
-    </div>
-  </footer>
 
-  <!-- ================= MODALS ================= -->
+      <!-- TAB 1: ORDERS DASHBOARD -->
+      <div id="adminOrdersTab" class="admin-tab-content space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">प्राप्त B2B सैंपल ऑर्डर्स व भुगतान विवरण</h3>
+              <p class="text-xs text-slate-500">पार्टनर ID, डिजिटल कार्ड नंबर, UPI UTR और स्क्रीनशॉट से सीधे भुगतान मैच करें</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="orderSearchFilter" oninput="filterOrdersList()" placeholder="कार्ड सं, ID, लैब या UTR खोजें..." class="text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              <button onclick="loadOrdersRealtime()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl transition">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+          </div>
+          <div id="ordersCardsContainer" class="space-y-4"></div>
+        </div>
+      </div>
 
-  <!-- 1. ADMIN POPUP -->
-  <div id="adminDirectPopup" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-brandBorder text-center space-y-4">
-      <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
-        <i class="fa-solid fa-user-shield"></i>
+      <!-- TAB 2: TEST MANAGEMENT (ADD, EDIT, DELETE TESTS) -->
+      <div id="adminTestsTab" class="admin-tab-content hidden space-y-6">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">जाँच प्रोफाइल एवं टेस्ट सूची प्रबंधन</h3>
+              <p class="text-xs text-slate-500">यहाँ से कोई भी नया टेस्ट जोड़ें, नाम/MRP/B2B रेट बदलें अथवा टेस्ट रिमूव करें</p>
+            </div>
+            <button onclick="openTestModal(null)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition flex items-center gap-2 active:scale-95">
+              <i class="fa-solid fa-plus"></i> <span>+ नया टेस्ट जोड़ें</span>
+            </button>
+          </div>
+
+          <!-- Tests Table in Admin -->
+          <div class="overflow-x-auto custom-scroll border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">कोड</th>
+                  <th class="py-3 px-3">टेस्ट का नाम</th>
+                  <th class="py-3 px-3 text-right">MRP (₹)</th>
+                  <th class="py-3 px-3 text-right">B2B रेट (₹)</th>
+                  <th class="py-3 px-3 text-center">एक्शन</th>
+                </tr>
+              </thead>
+              <tbody id="adminTestsTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: GALLERY MANAGER -->
+      <div id="adminGalleryTab" class="admin-tab-content hidden space-y-6">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-extrabold text-base text-slate-900">लैब फोटो गैलरी प्रबंधन</h3>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">फोटो का शीर्षक / विवरण</label>
+                <input type="text" id="newPhotoTitle" placeholder="मशीन या उपकरण का नाम" class="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">इमेज फ़ाइल चुनें</label>
+                <input type="file" id="newPhotoFileInput" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full">
+              </div>
+            </div>
+            <button onclick="handleUploadLabPhoto()" id="btnUploadLabPhoto" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition flex items-center gap-2">
+              <i class="fa-solid fa-cloud-arrow-up"></i> <span>फोटो अपलोड व प्रकाशित करें</span>
+            </button>
+          </div>
+          <h4 class="font-bold text-sm text-slate-800 pt-2">वर्तमान में लाइव तस्वीरें</h4>
+          <div id="adminGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: SETTINGS, LOGO, PAYMENT QR -->
+      <div id="adminSettingsTab" class="admin-tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3">
+            <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-image text-blue-600"></i> वेबसाइट लोगो
+            </h4>
+            <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              <img id="logoLivePreview" src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&q=80" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow">
+              <div class="flex-1 space-y-2">
+                <input type="file" id="logoUploadFile" accept="image/*" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white cursor-pointer w-full">
+                <button onclick="uploadLogoToImgBB()" id="btnUploadLogo" class="bg-slate-900 hover:bg-black text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition">अपलोड व लोगो सेट करें</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3">
+            <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-qrcode text-emerald-600"></i> B2B पेमेंट QR कोड
+            </h4>
+            <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              <img id="qrLivePreview" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=9153903729@okbizaxis" class="w-14 h-14 rounded-2xl object-contain border-2 border-white shadow bg-white">
+              <div class="flex-1 space-y-2">
+                <input type="file" id="qrUploadFile" accept="image/*" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white cursor-pointer w-full">
+                <button onclick="uploadQrToImgBB()" id="btnUploadQr" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition">अपलोड व नया QR सेट करें</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-extrabold text-base text-slate-900">वेबसाइट विवरण, फ़ोन, पता व Google Maps</h3>
+          <form onsubmit="handleSaveSiteSettings(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">सेंटर का नाम</label>
+                <input type="text" id="setSiteName" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">हेल्पलाइन / WhatsApp नंबर</label>
+                <input type="text" id="setPhone" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">डेस्क ईमेल</label>
+                <input type="email" id="setEmail" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">काउंटर का पता (Location)</label>
+                <input type="text" id="setAddress" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Google Maps Embed URL (Iframe Link)</label>
+              <input type="text" id="setMapEmbed" placeholder="https://www.google.com/maps/embed?pb=..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+            </div>
+            <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50">
+              <span class="text-xs font-bold text-slate-600 block mb-2">मैप लाइव प्रीव्यू:</span>
+              <div id="adminMapFrameWrapper" class="w-full h-44 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center text-xs text-slate-400">मैप लिंक दर्ज करने पर प्रीव्यू दिखेगा</div>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 px-6 rounded-2xl shadow transition active:scale-95">सेटिंग्स सुरक्षित करें</button>
+          </form>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-extrabold text-base text-slate-900">सुरक्षा पिन बदलें</h3>
+          <p class="text-xs text-slate-500">एडमिन पैनल का एक्सेस पासवर्ड यहाँ से बदल सकते हैं।</p>
+          <div class="flex flex-col sm:flex-row gap-3 max-w-md">
+            <input type="password" id="setNewPin" placeholder="नया पिन दर्ज करें..." class="text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+            <button onclick="handleChangePin()" class="bg-slate-900 hover:bg-black text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">पिन अपडेट करें</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: PARTNER DIRECTORY -->
+      <div id="adminUsersTab" class="admin-tab-content hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-extrabold text-base text-slate-900 mb-1">पार्टनर्स कार्ड डायरेक्टरी</h3>
+          <p class="text-xs text-slate-500 mb-4">Google लॉगिन द्वारा आवंटित यूनिक B2B ID और उनके डिजिटल पार्टनर कार्ड नंबर</p>
+          <div class="overflow-x-auto custom-scroll border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">यूनिक B2B ID</th>
+                  <th class="py-3 px-3">पार्टनर कार्ड नंबर</th>
+                  <th class="py-3 px-3">यूजर का नाम</th>
+                  <th class="py-3 px-3">Google ईमेल</th>
+                  <th class="py-3 px-3">जारी तिथि</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: REVIEWS MODERATOR -->
+      <div id="adminReviewsTab" class="admin-tab-content hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3">रिव्यू मॉडरेटर एवं एडिटर</h3>
+          <div id="adminReviewsList" class="space-y-3"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- 1. ADD / EDIT TEST MODAL -->
+  <div id="testEditModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 relative space-y-3">
+      <h4 id="testModalTitle" class="font-bold text-slate-900 text-base">टेस्ट जानकारी जोड़ें / बदलें</h4>
+      <input type="hidden" id="editTestKey">
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">टेस्ट कोड (उदा. Z021)</label>
+        <input type="text" id="modalTestCode" class="w-full text-xs font-mono font-bold uppercase p-2 border border-slate-300 rounded-xl outline-none">
       </div>
       <div>
-        <h4 class="font-extrabold text-slate-900 text-lg">एडमिन एक्सेस डिटेक्टेड!</h4>
-        <p class="text-xs text-slate-500 mt-1">आप मुख्य एडमिन ईमेल आईडी से लॉगिन हुए हैं।</p>
+        <label class="block text-xs font-bold text-slate-700 mb-1">टेस्ट का पूरा नाम</label>
+        <input type="text" id="modalTestName" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none">
       </div>
-      <div class="space-y-2 pt-2">
-        <button onclick="goToAdminPanel()" class="w-full bg-slate-900 hover:bg-black text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow transition">
-          <i class="fa-solid fa-gauge-high"></i> एडमिन पैनल खोलें
-        </button>
-        <button onclick="closeAdminPopup()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition">
-          यूज़र पैनल में बने रहें
-        </button>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">MRP (₹)</label>
+          <input type="number" id="modalTestMrp" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">B2B रेट (₹)</label>
+          <input type="number" id="modalTestB2b" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none">
+        </div>
+      </div>
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="saveTestDetails()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl">सेव करें</button>
+        <button onclick="closeTestModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl">रद्द करें</button>
       </div>
     </div>
   </div>
 
-  <!-- 2. SUBMIT REVIEW MODAL -->
+  <!-- 2. PIN AUTH MODAL FOR 3-TAP TRIGGER -->
+  <div id="secretPinModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl border border-brandBorder text-center space-y-3">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold">
+        <i class="fa-solid fa-terminal"></i>
+      </div>
+      <input type="password" id="secretPasscode" maxlength="6" placeholder="Passcode" class="w-full text-center text-lg font-mono tracking-widest p-2.5 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-slate-800">
+      <button onclick="verifySecretCode()" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl">खोलें</button>
+      <button onclick="document.getElementById('secretPinModal').classList.add('hidden')" class="w-full text-xs text-slate-400 py-1">रद्द करें</button>
+    </div>
+  </div>
+
+  <!-- 3. REVIEW WRITE MODAL -->
   <div id="reviewInputModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-brandBorder relative">
       <button onclick="closeReviewModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700">
@@ -386,7 +648,6 @@
       </button>
       <h4 class="font-bold text-slate-900 text-base mb-1">अपना B2B अनुभव लिखें</h4>
       <p class="text-xs text-slate-500 mb-4">समय पर रिपोर्ट, B2B रेट और सर्विस पर अपनी राय दें।</p>
-
       <form onsubmit="handleSendReview(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">नाम / लैब का नाम *</label>
@@ -404,26 +665,42 @@
           <label class="block text-xs font-bold text-slate-700 mb-1">आपकी टिप्पणी *</label>
           <textarea id="revCommentInput" required rows="3" placeholder="यहाँ अपना रिव्यू दर्ज करें..." class="w-full text-xs p-2.5 border border-brandBorder rounded-xl outline-none focus:ring-2 focus:ring-blue-600"></textarea>
         </div>
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl transition">
-          रिव्यू पोस्ट करें
-        </button>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl transition">रिव्यू पोस्ट करें</button>
       </form>
     </div>
   </div>
 
-  <!-- 3. SECRET PIN PROMPT (Triggered on 3 Taps) -->
-  <div id="secretPinModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl border border-brandBorder text-center space-y-3">
-      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold">
-        <i class="fa-solid fa-terminal"></i>
+  <!-- 4. EDIT REVIEW MODAL -->
+  <div id="editReviewModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 relative space-y-3">
+      <h4 class="font-bold text-slate-900 text-base">रिव्यू एडिट करें</h4>
+      <input type="hidden" id="editReviewKey">
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">लेखक / लैब का नाम</label>
+        <input type="text" id="editRevAuthor" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none">
       </div>
-      <input type="password" id="secretPasscode" maxlength="6" placeholder="Passcode" class="w-full text-center text-lg font-mono tracking-widest p-2.5 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-slate-800">
-      <button onclick="verifySecretCode()" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl">खोलें</button>
-      <button onclick="document.getElementById('secretPinModal').classList.add('hidden')" class="w-full text-xs text-slate-400 py-1">रद्द करें</button>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">रेटिंग (1 से 5)</label>
+        <select id="editRevStars" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none bg-white">
+          <option value="5">⭐⭐⭐⭐⭐ (5 Star)</option>
+          <option value="4">⭐⭐⭐⭐ (4 Star)</option>
+          <option value="3">⭐⭐⭐ (3 Star)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">टिप्पणी</label>
+        <textarea id="editRevComment" rows="3" class="w-full text-xs p-2 border border-slate-300 rounded-xl outline-none"></textarea>
+      </div>
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="saveEditedReview()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl">सेव करें</button>
+        <button onclick="closeEditReviewModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl">रद्द करें</button>
+      </div>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT CORE LOGIC                      -->
+  <!-- ========================================== -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCuPrvfgrXLIxEDcpximEVoQQqvxc8BtEc",
@@ -444,8 +721,8 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Flyer Test Catalog
-    const testsData = [
+    // Default Seed Catalog (If DB is empty)
+    const seedTests = [
       { code: "Z021", name: "CBC (Complete Blood Count)", mrp: 330, b2b: 290 },
       { code: "Z005", name: "LFT (Liver Function Complete)", mrp: 790, b2b: 680 },
       { code: "Z007", name: "KFT / RFT (Kidney Profile)", mrp: 840, b2b: 720 },
@@ -476,16 +753,27 @@
       { code: "Z318", name: "Lipid Profile", mrp: 400, b2b: 240 }
     ];
 
+    let liveTestsData = [];
     let orderCart = [];
     let loggedUser = null;
     let userAssignedId = null;
     let userAssignedCardNumber = null;
+    let allOrdersData = {};
 
-    // Navigation Helper
-    function goToAdminPanel() {
-      const currentPath = window.location.pathname;
-      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-      window.location.href = basePath + 'admin.html';
+    // ==========================================
+    // VIEW SWITCHER (NO 404 POSSIBLE)
+    // ==========================================
+    function switchToAdminPanel() {
+      document.getElementById("userPanelWrapper").classList.add("hidden");
+      document.getElementById("adminPanelWrapper").classList.remove("hidden");
+      window.scrollTo(0, 0);
+      initAdminPanelData();
+    }
+
+    function switchToUserPanel() {
+      document.getElementById("adminPanelWrapper").classList.add("hidden");
+      document.getElementById("userPanelWrapper").classList.remove("hidden");
+      window.scrollTo(0, 0);
     }
 
     // 3-Taps Trigger on Logo
@@ -496,9 +784,7 @@
       logoTrigger.addEventListener("click", () => {
         tapCount++;
         clearTimeout(tapTimeout);
-        tapTimeout = setTimeout(() => {
-          tapCount = 0;
-        }, 1500);
+        tapTimeout = setTimeout(() => { tapCount = 0; }, 1500);
 
         if (tapCount >= 3) {
           tapCount = 0;
@@ -512,15 +798,140 @@
       const code = document.getElementById("secretPasscode").value.trim();
       if (code === "7864") {
         document.getElementById("secretPinModal").classList.add("hidden");
-        goToAdminPanel();
+        switchToAdminPanel();
       } else {
         alert("अमान्य कोड!");
         document.getElementById("secretPinModal").classList.add("hidden");
       }
     }
 
-    // Render Test Cards
-    function renderTestCatalog(items) {
+    // ==========================================
+    // AUTHENTICATION LOGIC
+    // ==========================================
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(e => alert("लॉगिन त्रुटि: " + e.message));
+    }
+
+    function handleLogout() {
+      auth.signOut().then(() => location.reload());
+    }
+
+    function handleAdminSignOut() {
+      auth.signOut().then(() => location.reload());
+    }
+
+    auth.onAuthStateChanged(user => {
+      loggedUser = user;
+      const authSlot = document.getElementById("authSlot");
+      const banner = document.getElementById("userProfileBanner");
+      const adminBtn = document.getElementById("adminDirectBtn");
+
+      if (user) {
+        banner.classList.remove("hidden");
+        document.getElementById("uAvatar").src = user.photoURL || "https://via.placeholder.com/40";
+        document.getElementById("uName").innerText = user.displayName || "Partner";
+        document.getElementById("uEmail").innerText = user.email;
+
+        authSlot.innerHTML = `
+          <button onclick="handleLogout()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl transition">
+            लॉगआउट
+          </button>
+        `;
+
+        if (user.email === ADMIN_EMAIL) {
+          adminBtn.classList.remove("hidden");
+        } else {
+          adminBtn.classList.add("hidden");
+        }
+
+        assignOrRetrieveUniqueProfile(user);
+      } else {
+        banner.classList.add("hidden");
+        adminBtn.classList.add("hidden");
+        authSlot.innerHTML = `
+          <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
+            <i class="fa-brands fa-google"></i>
+            <span>Google लॉगिन</span>
+          </button>
+        `;
+        document.getElementById("orderFormUniqueId").value = "";
+        document.getElementById("orderFormCardNumber").value = "";
+        document.getElementById("paymentCardTag").innerText = "लॉगिन आवश्यक";
+      }
+    });
+
+    function assignOrRetrieveUniqueProfile(user) {
+      const userRef = db.ref("users/" + user.uid);
+      userRef.once("value").then(snap => {
+        let val = snap.val();
+        if (val && val.uniqueId && val.cardNumber) {
+          userAssignedId = val.uniqueId;
+          userAssignedCardNumber = val.cardNumber;
+          applyProfileToUI(userAssignedId, userAssignedCardNumber);
+        } else {
+          const randomIdPart = Math.floor(1000 + Math.random() * 9000);
+          userAssignedId = `RX-${randomIdPart}`;
+
+          const cardPart1 = Math.floor(1000 + Math.random() * 9000);
+          const cardPart2 = Math.floor(1000 + Math.random() * 9000);
+          userAssignedCardNumber = `RX-CARD-${cardPart1}-${cardPart2}`;
+
+          const payload = {
+            uniqueId: userAssignedId,
+            cardNumber: userAssignedCardNumber,
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL,
+            createdAt: Date.now()
+          };
+
+          userRef.set(payload);
+
+          db.ref("partner_directory/" + userAssignedId).set({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName,
+            cardNumber: userAssignedCardNumber
+          });
+
+          applyProfileToUI(userAssignedId, userAssignedCardNumber);
+        }
+      });
+    }
+
+    function applyProfileToUI(id, cardNum) {
+      document.getElementById("uUniqueId").innerText = `ID: ${id}`;
+      document.getElementById("uCardNumber").innerText = cardNum;
+      document.getElementById("orderFormUniqueId").value = id;
+      document.getElementById("orderFormCardNumber").value = cardNum;
+      document.getElementById("paymentCardTag").innerText = cardNum;
+    }
+
+    // ==========================================
+    // DYNAMIC TEST CATALOG (REAL-TIME DB SYNC)
+    // ==========================================
+    function initDynamicTests() {
+      db.ref("catalog_tests").on("value", snap => {
+        const data = snap.val();
+        if (!data) {
+          // Seed database initially
+          seedTests.forEach(t => db.ref("catalog_tests").push(t));
+          return;
+        }
+
+        liveTestsData = [];
+        Object.keys(data).forEach(k => {
+          liveTestsData.push({ key: k, ...data[k] });
+        });
+
+        renderTestCatalogUser(liveTestsData);
+        renderTestCatalogAdmin(liveTestsData);
+        document.getElementById("metricTestsCount").innerText = liveTestsData.length;
+      });
+    }
+
+    function renderTestCatalogUser(items) {
       const grid = document.getElementById("testCardsGrid");
       grid.innerHTML = "";
 
@@ -544,13 +955,98 @@
 
     function filterCatalog() {
       const q = document.getElementById("testSearchInput").value.toLowerCase();
-      const filtered = testsData.filter(t => t.name.toLowerCase().includes(q) || t.code.toLowerCase().includes(q));
-      renderTestCatalog(filtered);
+      const filtered = liveTestsData.filter(t => t.name.toLowerCase().includes(q) || t.code.toLowerCase().includes(q));
+      renderTestCatalogUser(filtered);
     }
 
-    // Cart Logic
+    function renderTestCatalogAdmin(items) {
+      const tbody = document.getElementById("adminTestsTableBody");
+      tbody.innerHTML = "";
+
+      items.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-mono font-bold text-blue-700">${t.code}</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-800">${t.name}</td>
+          <td class="py-2.5 px-3 text-right text-slate-400 line-through">₹${t.mrp}</td>
+          <td class="py-2.5 px-3 text-right font-black text-slate-900">₹${t.b2b}</td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">
+            <button onclick="openTestModal('${t.key}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-lg text-xs font-bold mr-1" title="एडिट">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="deleteTest('${t.key}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1 rounded-lg text-xs font-bold" title="डिलीट">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openTestModal(key) {
+      document.getElementById("editTestKey").value = key || "";
+      if (key) {
+        const t = liveTestsData.find(item => item.key === key);
+        document.getElementById("testModalTitle").innerText = "टेस्ट एडिट करें";
+        document.getElementById("modalTestCode").value = t.code;
+        document.getElementById("modalTestName").value = t.name;
+        document.getElementById("modalTestMrp").value = t.mrp;
+        document.getElementById("modalTestB2b").value = t.b2b;
+      } else {
+        document.getElementById("testModalTitle").innerText = "नया टेस्ट जोड़ें";
+        document.getElementById("modalTestCode").value = "";
+        document.getElementById("modalTestName").value = "";
+        document.getElementById("modalTestMrp").value = "";
+        document.getElementById("modalTestB2b").value = "";
+      }
+      document.getElementById("testEditModal").classList.remove("hidden");
+    }
+
+    function closeTestModal() {
+      document.getElementById("testEditModal").classList.add("hidden");
+    }
+
+    function saveTestDetails() {
+      const key = document.getElementById("editTestKey").value;
+      const code = document.getElementById("modalTestCode").value.trim().toUpperCase();
+      const name = document.getElementById("modalTestName").value.trim();
+      const mrp = parseInt(document.getElementById("modalTestMrp").value) || 0;
+      const b2b = parseInt(document.getElementById("modalTestB2b").value) || 0;
+
+      if (!code || !name) {
+        alert("कृपया कोड और नाम दोनों दर्ज करें!");
+        return;
+      }
+
+      const payload = { code, name, mrp, b2b };
+
+      if (key) {
+        db.ref("catalog_tests/" + key).update(payload).then(() => {
+          closeTestModal();
+          alert("टेस्ट सफलतापूर्वक अपडेट हो गया!");
+        });
+      } else {
+        db.ref("catalog_tests").push(payload).then(() => {
+          closeTestModal();
+          alert("नया टेस्ट सूची में जुड़ गया!");
+        });
+      }
+    }
+
+    function deleteTest(key) {
+      if (confirm("क्या आप वाकई इस टेस्ट को सूची से हटाना चाहते हैं?")) {
+        db.ref("catalog_tests/" + key).remove().then(() => {
+          alert("टेस्ट हटा दिया गया!");
+        });
+      }
+    }
+
+    // ==========================================
+    // ORDER / CART LOGIC
+    // ==========================================
     function addItemToOrder(code) {
-      const item = testsData.find(t => t.code === code);
+      const item = liveTestsData.find(t => t.code === code);
       if (!item) return;
       if (!orderCart.some(c => c.code === code)) {
         orderCart.push(item);
@@ -603,117 +1099,6 @@
       document.getElementById("sumSavings").innerText = `₹${mrpSum - b2bSum}`;
     }
 
-    // Google Login & Unique ID + Digital Card Generation
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(e => alert("लॉगिन त्रुटि: " + e.message));
-    }
-
-    function handleLogout() {
-      auth.signOut().then(() => location.reload());
-    }
-
-    auth.onAuthStateChanged(user => {
-      loggedUser = user;
-      const authSlot = document.getElementById("authSlot");
-      const banner = document.getElementById("userProfileBanner");
-      const adminBtn = document.getElementById("adminTopBtn");
-
-      if (user) {
-        banner.classList.remove("hidden");
-        document.getElementById("uAvatar").src = user.photoURL || "https://via.placeholder.com/40";
-        document.getElementById("uName").innerText = user.displayName || "Partner";
-        document.getElementById("uEmail").innerText = user.email;
-
-        authSlot.innerHTML = `
-          <button onclick="handleLogout()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl transition">
-            लॉगआउट
-          </button>
-        `;
-
-        if (user.email === ADMIN_EMAIL) {
-          adminBtn.classList.remove("hidden");
-          adminBtn.onclick = (e) => {
-            e.preventDefault();
-            goToAdminPanel();
-          };
-          if (!sessionStorage.getItem("admin_popup_closed")) {
-            document.getElementById("adminDirectPopup").classList.remove("hidden");
-          }
-        } else {
-          adminBtn.classList.add("hidden");
-        }
-
-        assignOrRetrieveUniqueProfile(user);
-      } else {
-        banner.classList.add("hidden");
-        adminBtn.classList.add("hidden");
-        authSlot.innerHTML = `
-          <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow transition active:scale-95">
-            <i class="fa-brands fa-google"></i>
-            <span>Google लॉगिन</span>
-          </button>
-        `;
-        document.getElementById("orderFormUniqueId").value = "";
-        document.getElementById("orderFormCardNumber").value = "";
-        document.getElementById("paymentCardTag").innerText = "लॉगिन आवश्यक";
-      }
-    });
-
-    function closeAdminPopup() {
-      sessionStorage.setItem("admin_popup_closed", "true");
-      document.getElementById("adminDirectPopup").classList.add("hidden");
-    }
-
-    // Auto-generates both Unique ID and Dedicated Partner Card Number
-    function assignOrRetrieveUniqueProfile(user) {
-      const userRef = db.ref("users/" + user.uid);
-      userRef.once("value").then(snap => {
-        let val = snap.val();
-        if (val && val.uniqueId && val.cardNumber) {
-          userAssignedId = val.uniqueId;
-          userAssignedCardNumber = val.cardNumber;
-          applyProfileToUI(userAssignedId, userAssignedCardNumber);
-        } else {
-          const randomIdPart = Math.floor(1000 + Math.random() * 9000);
-          userAssignedId = `RX-${randomIdPart}`;
-
-          const cardPart1 = Math.floor(1000 + Math.random() * 9000);
-          const cardPart2 = Math.floor(1000 + Math.random() * 9000);
-          userAssignedCardNumber = `RX-CARD-${cardPart1}-${cardPart2}`;
-
-          const payload = {
-            uniqueId: userAssignedId,
-            cardNumber: userAssignedCardNumber,
-            name: user.displayName,
-            email: user.email,
-            photo: user.photoURL,
-            createdAt: Date.now()
-          };
-
-          userRef.set(payload);
-
-          db.ref("partner_directory/" + userAssignedId).set({
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName,
-            cardNumber: userAssignedCardNumber
-          });
-
-          applyProfileToUI(userAssignedId, userAssignedCardNumber);
-        }
-      });
-    }
-
-    function applyProfileToUI(id, cardNum) {
-      document.getElementById("uUniqueId").innerText = `ID: ${id}`;
-      document.getElementById("uCardNumber").innerText = cardNum;
-      document.getElementById("orderFormUniqueId").value = id;
-      document.getElementById("orderFormCardNumber").value = cardNum;
-      document.getElementById("paymentCardTag").innerText = cardNum;
-    }
-
-    // Helper: Upload Payment Screenshot via ImgBB
     async function uploadProofToImgBB(file) {
       if (!file) return null;
       const formData = new FormData();
@@ -730,12 +1115,11 @@
       }
     }
 
-    // Place Order Form Submission (Sends all details + Card + UTR to DB & WhatsApp)
     async function handlePlaceOrder(e) {
       e.preventDefault();
 
       if (!loggedUser) {
-        alert("कृपया पहले ऊपर से Google से लॉगिन करें ताकि आपकी यूनिक ID व कार्ड बन सके!");
+        alert("कृपया पहले ऊपर से Google से लॉगिन करें!");
         loginWithGoogle();
         return;
       }
@@ -759,7 +1143,6 @@
       const utrNo = document.getElementById("paymentUtrNumber").value.trim();
       const totalAmount = orderCart.reduce((a, b) => a + b.b2b, 0);
 
-      // Check Screenshot File
       const proofInput = document.getElementById("paymentProofFile");
       let proofUrl = null;
       if (proofInput && proofInput.files.length > 0) {
@@ -783,7 +1166,6 @@
         timestamp: Date.now()
       };
 
-      // Push to Firebase RTDB
       db.ref("orders").push(orderPayload).then(() => {
         let testListMsg = orderCart.map((t, idx) => `${idx + 1}. [${t.code}] ${t.name} (₹${t.b2b})`).join("%0A");
         let proofMsg = proofUrl ? `%0A*पेमेंट स्क्रीनशॉट:* ${proofUrl}` : "";
@@ -803,77 +1185,387 @@
       });
     }
 
-    // Real-Time Site Settings Sync
-    function syncSettings() {
-      db.ref("site_settings").on("value", snap => {
-        const s = snap.val();
-        if (s) {
-          if (s.logoUrl) document.getElementById("siteLogoImg").src = s.logoUrl;
-          if (s.paymentQrUrl) document.getElementById("paymentQrImg").src = s.paymentQrUrl;
-          if (s.siteName) document.getElementById("siteNameText").innerText = s.siteName;
-          if (s.phone) {
-            document.getElementById("headerPhone").innerText = s.phone;
-            document.getElementById("dynContactPhone").innerText = s.phone;
-          }
-          if (s.address) {
-            document.getElementById("dynContactAddress").innerText = s.address;
-            document.getElementById("deskLocationText").innerText = s.address;
-          }
-          if (s.email) {
-            document.getElementById("deskEmailDisplay").innerText = s.email;
-          }
-          if (s.mapEmbedUrl) {
-            document.getElementById("mapEmbedFrameContainer").innerHTML = `
-              <iframe src="${s.mapEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-            `;
-          }
+    // ==========================================
+    // ADMIN FUNCTIONS & TABS
+    // ==========================================
+    function switchAdminTab(tabId) {
+      document.querySelectorAll(".admin-tab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+        btn.className = "admin-tab-btn px-4 py-2.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0 flex items-center gap-2";
+      });
+
+      document.getElementById(tabId).classList.remove("hidden");
+      const activeBtn = document.getElementById("atab-" + tabId);
+      activeBtn.className = "admin-tab-btn px-4 py-2.5 rounded-xl bg-blue-600 text-white shadow-sm shrink-0 flex items-center gap-2";
+    }
+
+    function initAdminPanelData() {
+      loadStatsCounters();
+      loadOrdersRealtime();
+      loadGalleryAdmin();
+      loadSettingsIntoForm();
+      loadUsersDirectory();
+      loadReviewsAdmin();
+    }
+
+    function loadStatsCounters() {
+      db.ref("stats/visitors").on("value", s => {
+        document.getElementById("metricVisitors").innerText = s.val() || 0;
+      });
+      db.ref("orders").on("value", s => {
+        document.getElementById("metricOrders").innerText = s.exists() ? Object.keys(s.val()).length : 0;
+      });
+      db.ref("users").on("value", s => {
+        document.getElementById("metricUsers").innerText = s.exists() ? Object.keys(s.val()).length : 0;
+      });
+    }
+
+    function loadOrdersRealtime() {
+      db.ref("orders").on("value", snap => {
+        allOrdersData = snap.val() || {};
+        renderOrdersCards(allOrdersData);
+      });
+    }
+
+    function renderOrdersCards(ordersObj) {
+      const container = document.getElementById("ordersCardsContainer");
+      container.innerHTML = "";
+
+      const keys = Object.keys(ordersObj).reverse();
+      if (keys.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xs">कोई B2B ऑर्डर प्राप्त नहीं हुआ है।</div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const ord = ordersObj[key];
+        const dateStr = new Date(ord.timestamp).toLocaleString();
+        const isVerified = ord.status === "Payment Verified";
+
+        const card = document.createElement("div");
+        card.className = "p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm space-y-3";
+
+        const testsHtml = ord.tests ? ord.tests.map((t, idx) => `
+          <div class="flex justify-between items-center text-[11px] py-1 border-b border-slate-200/60 font-mono">
+            <span>${idx + 1}. [${t.code}] ${t.name}</span>
+            <span class="font-bold text-blue-700">₹${t.b2b}</span>
+          </div>
+        `).join("") : "-";
+
+        let proofSection = `<span class="text-xs text-slate-400 block mt-1">स्क्रीनशॉट अपलोड नहीं किया गया</span>`;
+        if (ord.paymentProof && ord.paymentProof.startsWith("http")) {
+          proofSection = `
+            <a href="${ord.paymentProof}" target="_blank" class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-emerald-100 transition mt-2">
+              <i class="fa-solid fa-receipt text-emerald-600"></i>
+              <span>पेमेंट स्क्रीनशॉट खोलें</span>
+            </a>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-lg">${ord.uniqueId || 'RX-PARTNER'}</span>
+              <span class="bg-indigo-100 text-indigo-900 border border-indigo-200 font-mono text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <i class="fa-solid fa-id-card text-indigo-600"></i> ${ord.cardNumber || 'कार्ड सं उपलब्ध नहीं'}
+              </span>
+              <span class="font-bold text-sm text-slate-900">${ord.labName}</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="text-slate-400 font-mono text-[11px]">${dateStr}</span>
+              <button onclick="deleteOrder('${key}')" class="text-red-500 hover:text-red-700 p-1 font-bold" title="डिलीट">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="space-y-1">
+              <span class="text-slate-400 uppercase font-bold text-[10px] block">संपर्क व मरीज़ विवरण</span>
+              <div><strong>मरीज़ / वायल:</strong> ${ord.patient}</div>
+              <div><strong>मोबाइल:</strong> <a href="tel:${ord.phone}" class="font-mono text-blue-600 hover:underline">${ord.phone}</a></div>
+              <div><strong>स्थान:</strong> ${ord.location}</div>
+              <div><strong>ईमेल:</strong> <span class="text-slate-500 font-mono text-[11px]">${ord.userEmail || '-'}</span></div>
+              <div class="pt-2">
+                <a href="https://wa.me/91${ord.phone}" target="_blank" class="inline-flex items-center gap-1.5 text-emerald-700 font-bold hover:underline">
+                  <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp संदेश भेजें
+                </a>
+              </div>
+            </div>
+
+            <div class="space-y-1 bg-white p-3 rounded-xl border border-slate-200">
+              <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">चुने गए टेस्ट प्रोफाइल (${ord.tests ? ord.tests.length : 0})</span>
+              <div class="max-h-28 overflow-y-auto custom-scroll pr-1">${testsHtml}</div>
+            </div>
+
+            <div class="space-y-2 flex flex-col justify-between bg-white p-3 rounded-xl border border-slate-200">
+              <div>
+                <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">भुगतान सत्यापन</span>
+                <div class="text-lg font-black text-blue-700">देय राशि: ₹${ord.total}</div>
+                <div class="mt-1 font-mono text-[11px] text-slate-700">
+                  <strong>UTR / संदर्भ संख्या:</strong> <span class="bg-slate-100 px-1.5 py-0.5 rounded font-bold">${ord.utrNumber || 'दर्ज नहीं'}</span>
+                </div>
+                ${proofSection}
+              </div>
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] font-bold ${isVerified ? 'text-emerald-700' : 'text-amber-700'}">
+                  ${isVerified ? '✓ भुगतान सत्यापित' : '⏳ सत्यापन बाकी'}
+                </span>
+                <button onclick="toggleVerifyOrder('${key}', '${ord.status}')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition ${isVerified ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow'}">
+                  ${isVerified ? 'सत्यापन रद्द करें' : 'भुगतान सत्यापित करें'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleVerifyOrder(key, currentStatus) {
+      const newStatus = (currentStatus === "Payment Verified") ? "Pending Verification" : "Payment Verified";
+      db.ref("orders/" + key).update({ status: newStatus });
+    }
+
+    function filterOrdersList() {
+      const q = document.getElementById("orderSearchFilter").value.toLowerCase();
+      const filtered = {};
+      Object.keys(allOrdersData).forEach(k => {
+        const o = allOrdersData[k];
+        if (
+          (o.labName && o.labName.toLowerCase().includes(q)) ||
+          (o.phone && o.phone.includes(q)) ||
+          (o.uniqueId && o.uniqueId.toLowerCase().includes(q)) ||
+          (o.cardNumber && o.cardNumber.toLowerCase().includes(q)) ||
+          (o.utrNumber && o.utrNumber.toLowerCase().includes(q)) ||
+          (o.patient && o.patient.toLowerCase().includes(q))
+        ) {
+          filtered[k] = o;
+        }
+      });
+      renderOrdersCards(filtered);
+    }
+
+    function deleteOrder(key) {
+      if (confirm("क्या आप वाकई इस ऑर्डर को हटाना चाहते हैं?")) {
+        db.ref("orders/" + key).remove();
+      }
+    }
+
+    // ==========================================
+    // GALLERY, SETTINGS, USERS & REVIEWS
+    // ==========================================
+    function handleUploadLabPhoto() {
+      const fileInput = document.getElementById("newPhotoFileInput");
+      const titleInput = document.getElementById("newPhotoTitle");
+      const btn = document.getElementById("btnUploadLabPhoto");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("कृपया फोटो चुनें!");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `अपलोडिंग...`;
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>फोटो अपलोड व प्रकाशित करें</span>`;
+
+        if (res.success) {
+          db.ref("lab_photos").push({
+            url: res.data.url,
+            title: titleInput.value.trim(),
+            uploadedAt: Date.now()
+          }).then(() => {
+            titleInput.value = "";
+            fileInput.value = "";
+            alert("फोटो सफलतापूर्वक अपलोड हो गई!");
+          });
         }
       });
     }
 
-    // Dynamic Lab Photos Loader
-    function loadLabPhotos() {
+    function loadGalleryAdmin() {
       db.ref("lab_photos").on("value", snap => {
-        const grid = document.getElementById("labPhotosGrid");
+        const grid = document.getElementById("adminGalleryGrid");
+        const userGrid = document.getElementById("labPhotosGrid");
         grid.innerHTML = "";
-        const photos = snap.val();
+        userGrid.innerHTML = "";
+        const data = snap.val();
 
-        if (!photos) {
-          grid.innerHTML = `
-            <div class="col-span-full py-6 text-center text-xs text-slate-400">
-              <i class="fa-regular fa-image text-2xl text-slate-300 block mb-2"></i>
-              कोई फोटो अभी अपलोड नहीं की गई है।
-            </div>
-          `;
+        if (!data) {
+          grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">कोई फोटो अपलोड नहीं की गई है।</div>`;
+          userGrid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">कोई फोटो अभी अपलोड नहीं की गई है।</div>`;
           return;
         }
 
-        Object.keys(photos).forEach(k => {
-          const item = photos[k];
-          const div = document.createElement("div");
-          div.className = "group relative rounded-2xl overflow-hidden border border-brandBorder shadow-sm aspect-video sm:aspect-square bg-slate-100";
-          div.innerHTML = `
+        Object.keys(data).forEach(key => {
+          const item = data[key];
+
+          // Admin Card
+          const divAdmin = document.createElement("div");
+          divAdmin.className = "relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group aspect-video sm:aspect-square";
+          divAdmin.innerHTML = `
+            <img src="${item.url}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex flex-col justify-between p-2 text-white">
+              <span class="text-[10px] font-bold truncate">${item.title || 'Lab Photo'}</span>
+              <button onclick="deleteLabPhoto('${key}')" class="self-end bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-lg text-xs" title="हटाएँ">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+          grid.appendChild(divAdmin);
+
+          // User Card
+          const divUser = document.createElement("div");
+          divUser.className = "group relative rounded-2xl overflow-hidden border border-brandBorder shadow-sm aspect-video sm:aspect-square bg-slate-100";
+          divUser.innerHTML = `
             <img src="${item.url}" alt="${item.title || 'Lab Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             ${item.title ? `<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-white text-[11px] font-bold truncate">${item.title}</div>` : ''}
           `;
-          grid.appendChild(div);
+          userGrid.appendChild(divUser);
         });
       });
     }
 
-    // Visitor Tracking
-    function trackVisitors() {
-      const vRef = db.ref("stats/visitors");
-      vRef.transaction(c => (c || 0) + 1);
-      vRef.on("value", snap => {
-        document.getElementById("visitorCounter").innerText = snap.val() || 1;
+    function deleteLabPhoto(key) {
+      if (confirm("क्या आप वाकई इस फोटो को गैलरी से हटाना चाहते हैं?")) {
+        db.ref("lab_photos/" + key).remove();
+      }
+    }
+
+    function uploadLogoToImgBB() {
+      const fileInput = document.getElementById("logoUploadFile");
+      const file = fileInput.files[0];
+      if (!file) return alert("कृपया फोटो चुनें!");
+      const formData = new FormData();
+      formData.append("image", file);
+      fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          db.ref("site_settings/logoUrl").set(res.data.url).then(() => {
+            document.getElementById("logoLivePreview").src = res.data.url;
+            alert("नया लोगो सेट हो गया!");
+          });
+        }
       });
     }
 
-    // Reviews System
+    function uploadQrToImgBB() {
+      const fileInput = document.getElementById("qrUploadFile");
+      const file = fileInput.files[0];
+      if (!file) return alert("कृपया QR कोड फोटो चुनें!");
+      const formData = new FormData();
+      formData.append("image", file);
+      fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          db.ref("site_settings/paymentQrUrl").set(res.data.url).then(() => {
+            document.getElementById("qrLivePreview").src = res.data.url;
+            alert("नया पेमेंट QR सेट हो गया!");
+          });
+        }
+      });
+    }
+
+    function loadSettingsIntoForm() {
+      db.ref("site_settings").on("value", snap => {
+        const s = snap.val() || {};
+        document.getElementById("setSiteName").value = s.siteName || "ROXX Diagnostic Centre";
+        document.getElementById("setPhone").value = s.phone || "+91 9153903729";
+        document.getElementById("setEmail").value = s.email || "roxxdiagnosticcentre@gmail.com";
+        document.getElementById("setAddress").value = s.address || "मांझी (Manjhi), सारण जिला (बिहार)";
+        document.getElementById("setMapEmbed").value = s.mapEmbedUrl || "";
+
+        if (s.logoUrl) {
+          document.getElementById("logoLivePreview").src = s.logoUrl;
+          document.getElementById("siteLogoImg").src = s.logoUrl;
+        }
+        if (s.paymentQrUrl) {
+          document.getElementById("qrLivePreview").src = s.paymentQrUrl;
+          document.getElementById("paymentQrImg").src = s.paymentQrUrl;
+        }
+        if (s.siteName) document.getElementById("siteNameText").innerText = s.siteName;
+        if (s.phone) {
+          document.getElementById("headerPhone").innerText = s.phone;
+          document.getElementById("dynContactPhone").innerText = s.phone;
+        }
+        if (s.address) {
+          document.getElementById("dynContactAddress").innerText = s.address;
+          document.getElementById("deskLocationText").innerText = s.address;
+        }
+        if (s.email) document.getElementById("deskEmailDisplay").innerText = s.email;
+
+        if (s.mapEmbedUrl) {
+          document.getElementById("adminMapFrameWrapper").innerHTML = `<iframe src="${s.mapEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+          document.getElementById("mapEmbedFrameContainer").innerHTML = `<iframe src="${s.mapEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+        }
+      });
+    }
+
+    function handleSaveSiteSettings(e) {
+      e.preventDefault();
+      const payload = {
+        siteName: document.getElementById("setSiteName").value.trim(),
+        phone: document.getElementById("setPhone").value.trim(),
+        email: document.getElementById("setEmail").value.trim(),
+        address: document.getElementById("setAddress").value.trim(),
+        mapEmbedUrl: document.getElementById("setMapEmbed").value.trim()
+      };
+      db.ref("site_settings").update(payload).then(() => alert("सेटिंग्स सुरक्षित हो गईं!"));
+    }
+
+    function handleChangePin() {
+      const newPin = document.getElementById("setNewPin").value.trim();
+      if (!newPin || newPin.length < 4) return alert("कृपया कम से कम 4 अक्षरों/अंकों का पिन दर्ज करें!");
+      db.ref("site_settings/adminPin").set(newPin).then(() => {
+        document.getElementById("setNewPin").value = "";
+        alert("सुरक्षा पिन सफलतापूर्वक बदल दिया गया!");
+      });
+    }
+
+    function loadUsersDirectory() {
+      db.ref("users").on("value", snap => {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
+        const data = snap.val();
+
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">कोई यूजर डेटा नहीं मिला।</td></tr>`;
+          return;
+        }
+
+        Object.keys(data).forEach(uid => {
+          const u = data[uid];
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-mono font-bold text-blue-700">${u.uniqueId || '-'}</td>
+            <td class="py-2.5 px-3 font-mono font-bold text-indigo-800">${u.cardNumber || '-'}</td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${u.name || 'B2B Partner'}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-500">${u.email || '-'}</td>
+            <td class="py-2.5 px-3 text-[11px] text-slate-400 font-mono">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
     function openReviewModal() {
       if (!loggedUser) {
-        alert("रिव्यू देने के लिए कृपया पहले Google से लॉगिन करें!");
+        alert("रिव्यू देने के लिए पहले Google से लॉगिन करें!");
         loginWithGoogle();
         return;
       }
@@ -898,50 +1590,108 @@
       }).then(() => {
         closeReviewModal();
         e.target.reset();
-        alert("आपका रिव्यू सफलतापूर्वक पोस्ट हो गया!");
+        alert("रिव्यू पोस्ट हो गया!");
       });
     }
 
-    function loadRealReviews() {
+    function loadReviewsAdmin() {
       db.ref("reviews").on("value", snap => {
-        const list = document.getElementById("reviewsListGrid");
+        const list = document.getElementById("adminReviewsList");
+        const userList = document.getElementById("reviewsListGrid");
         list.innerHTML = "";
+        userList.innerHTML = "";
         const data = snap.val();
 
         if (!data) {
-          list.innerHTML = `
-            <div class="col-span-full py-8 text-center text-xs text-slate-400">
-              <i class="fa-regular fa-comment-dots text-2xl text-slate-300 block mb-2"></i>
-              अभी तक कोई रिव्यू नहीं आया है। सबसे पहले आप अपना रिव्यू दें!
-            </div>
-          `;
+          list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">कोई रिव्यू मौजूद नहीं है।</p>`;
+          userList.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400">अभी तक कोई रिव्यू नहीं आया है।</div>`;
           return;
         }
 
         Object.keys(data).forEach(id => {
-          const rev = data[id];
-          const div = document.createElement("div");
-          div.className = "bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs";
-          div.innerHTML = `
-            <div class="text-amber-500 mb-1.5">${"⭐".repeat(rev.stars || 5)}</div>
-            <p class="text-slate-700 leading-relaxed font-medium">"${rev.comment}"</p>
-            <div class="font-bold text-slate-900 mt-2 flex items-center justify-between">
-              <span>${rev.author}</span>
-              <span class="text-[10px] text-slate-400 font-mono">${new Date(rev.createdAt).toLocaleDateString()}</span>
+          const r = data[id];
+
+          // Admin Review
+          const divAdmin = document.createElement("div");
+          divAdmin.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs";
+          divAdmin.innerHTML = `
+            <div>
+              <div class="font-bold text-slate-900">${r.author} <span class="text-amber-500 ml-1.5">${"⭐".repeat(r.stars || 5)}</span></div>
+              <p class="text-slate-600 font-medium mt-0.5">"${r.comment}"</p>
+              <span class="text-[10px] text-slate-400 font-mono">${r.userEmail || ''} • ${new Date(r.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openEditReviewModal('${id}', '${encodeURIComponent(r.author)}', ${r.stars || 5}, '${encodeURIComponent(r.comment)}')" class="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg" title="एडिट">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deleteReviewAdmin('${id}')" class="bg-white border border-slate-200 text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg" title="हटाएँ">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           `;
-          list.appendChild(div);
+          list.appendChild(divAdmin);
+
+          // User Review
+          const divUser = document.createElement("div");
+          divUser.className = "bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs";
+          divUser.innerHTML = `
+            <div class="text-amber-500 mb-1.5">${"⭐".repeat(r.stars || 5)}</div>
+            <p class="text-slate-700 leading-relaxed font-medium">"${r.comment}"</p>
+            <div class="font-bold text-slate-900 mt-2 flex items-center justify-between">
+              <span>${r.author}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${new Date(r.createdAt).toLocaleDateString()}</span>
+            </div>
+          `;
+          userList.appendChild(divUser);
         });
       });
     }
 
-    // Init
+    function openEditReviewModal(key, author, stars, comment) {
+      document.getElementById("editReviewKey").value = key;
+      document.getElementById("editRevAuthor").value = decodeURIComponent(author);
+      document.getElementById("editRevStars").value = stars;
+      document.getElementById("editRevComment").value = decodeURIComponent(comment);
+      document.getElementById("editReviewModal").classList.remove("hidden");
+    }
+
+    function closeEditReviewModal() {
+      document.getElementById("editReviewModal").classList.add("hidden");
+    }
+
+    function saveEditedReview() {
+      const key = document.getElementById("editReviewKey").value;
+      const author = document.getElementById("editRevAuthor").value.trim();
+      const stars = parseInt(document.getElementById("editRevStars").value);
+      const comment = document.getElementById("editRevComment").value.trim();
+
+      db.ref("reviews/" + key).update({ author, stars, comment }).then(() => {
+        closeEditReviewModal();
+        alert("रिव्यू अपडेट हो गया!");
+      });
+    }
+
+    function deleteReviewAdmin(id) {
+      if (confirm("क्या आप इस रिव्यू को हटाना चाहते हैं?")) {
+        db.ref("reviews/" + id).remove();
+      }
+    }
+
+    function trackVisitors() {
+      const vRef = db.ref("stats/visitors");
+      vRef.transaction(c => (c || 0) + 1);
+      vRef.on("value", snap => {
+        document.getElementById("visitorCounter").innerText = snap.val() || 1;
+      });
+    }
+
+    // Startup Init
     window.addEventListener("DOMContentLoaded", () => {
-      renderTestCatalog(testsData);
-      syncSettings();
-      loadLabPhotos();
+      initDynamicTests();
+      loadSettingsIntoForm();
+      loadGalleryAdmin();
+      loadReviewsAdmin();
       trackVisitors();
-      loadRealReviews();
     });
   </script>
 </body>
